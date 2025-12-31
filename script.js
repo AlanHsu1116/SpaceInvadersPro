@@ -241,6 +241,7 @@ const soundManager = {
 // =================================
 //          GAME STATE
 // =================================
+let isMobileDevice = false;
 let gameState = {
     player: {
         x: canvas.width / 2 - 25,
@@ -740,6 +741,11 @@ function updatePlayer() {
     }
     if (movement.right && gameState.player.x < canvas.width - gameState.player.width) {
         gameState.player.x += gameState.player.speed;
+    }
+    
+    // Auto-fire on mobile
+    if (isMobileDevice) {
+        shoot();
     }
 }
 
@@ -1613,6 +1619,8 @@ function initMobileControls() {
         return;
     }
 
+    isMobileDevice = true;
+
     const mobileControls = document.getElementById('mobileControls');
     mobileControls.classList.remove('hidden');
 
@@ -1620,10 +1628,15 @@ function initMobileControls() {
     if (controlsGuide) {
         controlsGuide.classList.add('hidden');
     }
+    
+    // Hide shoot button on mobile since we have auto-fire
+    const shootBtn = document.getElementById('shootBtn');
+    if (shootBtn) {
+        shootBtn.style.display = 'none';
+    }
 
     const moveLeftBtn = document.getElementById('moveLeftBtn');
     const moveRightBtn = document.getElementById('moveRightBtn');
-    const shootBtn = document.getElementById('shootBtn');
 
     moveLeftBtn.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -1643,11 +1656,6 @@ function initMobileControls() {
     moveRightBtn.addEventListener('touchend', (e) => {
         e.preventDefault();
         movement.right = false;
-    });
-
-    shootBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        shoot();
     });
 
     // Prevent context menu on long press
