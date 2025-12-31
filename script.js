@@ -1612,6 +1612,11 @@ function initMobileControls() {
     const mobileControls = document.getElementById('mobileControls');
     mobileControls.classList.remove('hidden');
 
+    const controlsGuide = document.getElementById('controlsGuide');
+    if (controlsGuide) {
+        controlsGuide.classList.add('hidden');
+    }
+
     const moveLeftBtn = document.getElementById('moveLeftBtn');
     const moveRightBtn = document.getElementById('moveRightBtn');
     const shootBtn = document.getElementById('shootBtn');
