@@ -1177,14 +1177,18 @@ function drawGameOver() {
     ctx.font = '30px "Exo 2"';
     ctx.fillText(`最終分數: ${gameState.score}`, canvas.width / 2, 270);
 
+    const isMobile = !document.getElementById('mobileControls').classList.contains('hidden');
+
     if (gameState.continuesLeft > 0) {
         ctx.fillStyle = '#ff3366';
         ctx.font = '40px "Exo 2"';
-        ctx.fillText(`按 'Enter' 鍵接關 (剩餘: ${gameState.continuesLeft})`, canvas.width / 2, 360); // Moved down
+        const continueText = isMobile ? `點擊畫面接關 (剩餘: ${gameState.continuesLeft})` : `按 'Enter' 鍵接關 (剩餘: ${gameState.continuesLeft})`;
+        ctx.fillText(continueText, canvas.width / 2, 360); // Moved down
         
         ctx.fillStyle = '#e0e0e0';
         ctx.font = '20px "Exo 2"';
-        ctx.fillText("按 'R' 鍵重新開始", canvas.width / 2, 410); // Moved down
+        const restartText = isMobile ? "點擊畫面重新開始" : "按 'R' 鍵重新開始";
+        ctx.fillText(restartText, canvas.width / 2, 410); // Moved down
     } else {
         // Highscore title - Moved down
         ctx.fillStyle = '#ffff00';
@@ -1714,6 +1718,10 @@ canvas.addEventListener('click', () => {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     if (!gameState.gameStarted) {
         startGame();
+    } else if (gameState.levelComplete) {
+        nextLevel();
+    } else if (gameState.isGameOver && gameState.continuesLeft > 0 && !gameState.gameWon) {
+        continueGame();
     } else if (gameState.gameWon) {
         startGame();
     } else if (gameState.isGameOver && gameState.continuesLeft === 0) {
