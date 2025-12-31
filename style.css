@@ -308,3 +308,49 @@ canvas {
         color: #fff;
         box-shadow: 0 0 10px #ff3366;
     }
+
+#mobileControls {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    left: 0;
+    text-align: center;
+    z-index: 100;
+}
+
+#mobileControls.hidden {
+    display: none;
+}
+
+#mobileControls button {
+    background: rgba(0, 242, 255, 0.2);
+    border: 2px solid #00f2ff;
+    color: #00f2ff;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 24px;
+    width: 120px;
+    height: 80px;
+    margin: 0 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #00f2ff;
+    user-select: none; /* Prevent text selection */
+    -webkit-user-select: none; /* for Safari */
+}
+
+#mobileControls button:active {
+    background: rgba(0, 242, 255, 0.5);
+    box-shadow: 0 0 15px #00f2ff;
+}
+
+#shootBtn {
+    background: rgba(255, 51, 102, 0.2);
+    border-color: #ff3366;
+    color: #ff3366;
+    box-shadow: 0 0 10px #ff3366;
+    width: 150px;
+}
+
+#shootBtn:active {
+    background: rgba(255, 51, 102, 0.5);
+    box-shadow: 0 0 15px #ff3366;
+}

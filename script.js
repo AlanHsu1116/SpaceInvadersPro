@@ -1602,6 +1602,51 @@ function resetPlayer() {
 // =================================
 //        EVENT LISTENERS
 // =================================
+function initMobileControls() {
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+    if (!isTouchDevice) {
+        return;
+    }
+
+    const mobileControls = document.getElementById('mobileControls');
+    mobileControls.classList.remove('hidden');
+
+    const moveLeftBtn = document.getElementById('moveLeftBtn');
+    const moveRightBtn = document.getElementById('moveRightBtn');
+    const shootBtn = document.getElementById('shootBtn');
+
+    moveLeftBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        movement.left = true;
+    });
+
+    moveLeftBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        movement.left = false;
+    });
+
+    moveRightBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        movement.right = true;
+    });
+
+    moveRightBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        movement.right = false;
+    });
+
+    shootBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        shoot();
+    });
+
+    // Prevent context menu on long press
+    mobileControls.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    });
+}
+
 document.addEventListener('keydown', (e) => {
     if (isInMenu) return;
 
@@ -1679,6 +1724,7 @@ document.getElementById('submitScoreBtn').addEventListener('click', submitScore)
 // =================================
 sortLeaderboard();
 soundManager.init();
+initMobileControls();
 initStars();
 gameLoop();
 
