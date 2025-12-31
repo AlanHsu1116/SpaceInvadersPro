@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Center</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main Menu Overlay -->
+    <div id="mainMenu">
+        <h1 class="menu-title">ARCADE CENTER</h1>
+        <div class="game-grid">
+            <!-- Space Invaders Card -->
+            <div class="game-card" onclick="selectGame('space-invaders')">
+                <div class="game-icon">🚀</div>
+                <div class="game-title">Space Invaders PRO</div>
+                <div class="game-desc">經典重現！駕駛戰機，抵禦外星異種的入侵。挑戰極限高分！</div>
+                <button class="play-btn">START GAME</button>
+            </div>
+            
+            <!-- Placeholder for future games -->
+            <div class="game-card" style="opacity: 0.5; cursor: not-allowed; border-color: #444;">
+                <div class="game-icon" style="filter: grayscale(1);">🚧</div>
+                <div class="game-title" style="color: #666;">Coming Soon</div>
+                <div class="game-desc">更多精彩遊戲正在開發中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Wrapper (Hidden initially) -->
+    <div id="gameWrapper" class="hidden">
+        <button id="backToMenuBtn" onclick="backToMenu()">← 回主選單</button>
+        <h1>Space Invaders PRO</h1>
+        <div id="controls">
+            <button id="bgmBtn" tabindex="-1">🔇 音樂: 關</button>
+            <button id="sfxBtn" tabindex="-1">🔇 音效: 關</button>
+        </div>
+        <div id="gameContainer" style="position: relative;">
+            <canvas id="gameCanvas" width="1024" height="768"></canvas>
+            <div id="nameInputContainer" class="hidden">
+                <h2>新紀錄!</h2>
+                <p>請輸入您的名字:</p>
+                <input type="text" id="playerNameInput" maxlength="10" placeholder="AAA">
+                <button id="submitScoreBtn">確認</button>
+            </div>
+        </div>
+
+        <div id="controlsGuide">
+            <div class="guide-item"><span>← →</span> 移動</div>
+            <div class="guide-item"><span>Space</span> 射擊</div>
+            <div class="guide-item"><span>Enter</span> 開始/接關</div>
+            <div class="guide-item"><span>P</span> 暫停</div>
+            <div class="guide-item"><span>R</span> 重新開始</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
