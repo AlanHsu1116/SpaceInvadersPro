@@ -1,7 +1,52 @@
 // =================================
+//          AUDIO SYSTEM (Basic)
+// =================================
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    if (type === 'hit') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    } else if (type === 'error') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    } else if (type === 'explode') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+    }
+}
+
+// =================================
 //          WORD BANK
 // =================================
 const wordBank = {
+    letters: [
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
+        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+    ],
     easy: [
         "code", "data", "byte", "node", "java", "ruby", "perl", "bash", "hack", "wifi",
         "link", "host", "port", "root", "user", "pass", "file", "disk", "load", "save",
@@ -62,8 +107,9 @@ resizeCanvas();
 // =================================
 function getRandomWord() {
     let pool;
-    if (gameState.level === 1) pool = wordBank.easy;
-    else if (gameState.level <= 3) pool = [...wordBank.easy, ...wordBank.medium];
+    if (gameState.level <= 2) pool = wordBank.letters; // Level 1-2: Single letters
+    else if (gameState.level === 3) pool = wordBank.easy;
+    else if (gameState.level <= 5) pool = [...wordBank.easy, ...wordBank.medium];
     else pool = [...wordBank.medium, ...wordBank.hard];
     
     return pool[Math.floor(Math.random() * pool.length)];
@@ -75,7 +121,12 @@ function spawnWord() {
     const x = Math.random() * (canvas.width - margin * 2) + margin;
     
     // Base speed + level scaling
-    const speed = (1 + (gameState.level * 0.2)) * (Math.random() * 0.5 + 0.8);
+    // Slower for single letters initially
+    let speedBase = 0.8;
+    if (gameState.level <= 2) speedBase = 0.5 + (gameState.level * 0.2); 
+    else speedBase = 1.0 + (gameState.level * 0.15);
+
+    const speed = speedBase * (Math.random() * 0.5 + 0.8);
     
     gameState.activeWords.push({
         text: text,
@@ -97,9 +148,13 @@ function updateGame(deltaTime) {
     }
     
     // Difficulty Scaling
-    // Every 5 words cleared, increase difficulty slightly
+    // Every 5 clears = Level Up
     gameState.level = 1 + Math.floor(gameState.wordsCleared / 5);
-    gameState.spawnInterval = Math.max(500, 2000 - (gameState.level * 100));
+    
+    // Adjust spawn interval based on level
+    if (gameState.level === 1) gameState.spawnInterval = 2500;
+    else if (gameState.level === 2) gameState.spawnInterval = 2000;
+    else gameState.spawnInterval = Math.max(500, 1800 - (gameState.level * 100));
 
     // Spawning
     gameState.spawnTimer += deltaTime * 1000;
@@ -118,6 +173,7 @@ function updateGame(deltaTime) {
             // Penalty: huge time loss
             gameState.timeRemaining -= 5;
             createExplosion(word.x, canvas.height, '#f00');
+            playSound('error');
             gameState.activeWords.splice(i, 1);
             
             // Reset target if it was the target
@@ -145,11 +201,38 @@ window.addEventListener('keydown', (e) => {
     if (e.key.length !== 1) return;
 
     const char = e.key.toLowerCase();
+    
+    // Level 1-2: Single Letter Mode (No locking required)
+    if (gameState.level <= 2) {
+        // Find closest word matching this char
+        let bestIndex = -1;
+        let maxY = -1000;
 
+        gameState.activeWords.forEach((word, index) => {
+            if (word.text === char) { // Exact match for single letter
+                if (word.y > maxY) {
+                    maxY = word.y;
+                    bestIndex = index;
+                }
+            }
+        });
+
+        if (bestIndex !== -1) {
+            // Hit!
+            playSound('hit');
+            completeWord(bestIndex);
+        } else {
+            // Miss
+            playSound('error');
+            triggerErrorFlash();
+        }
+        return;
+    }
+
+    // Level 3+: Word Mode (Target Locking)
     // If no word is currently targeted
     if (gameState.targetWordIndex === -1) {
         // Find a word that starts with this char
-        // Prioritize words closer to the bottom (higher y)
         let bestIndex = -1;
         let maxY = -1000;
 
@@ -166,7 +249,8 @@ window.addEventListener('keydown', (e) => {
             gameState.targetWordIndex = bestIndex;
             processInputForWord(bestIndex, char);
         } else {
-            // Typo / No match penalty? Maybe play a sound
+            playSound('error');
+            triggerErrorFlash();
         }
     } else {
         // We have a target
@@ -181,6 +265,7 @@ function processInputForWord(index, char) {
     if (char === expectedChar) {
         // Match!
         word.matchedIndex++;
+        playSound('hit');
         createParticles(word.x + (word.matchedIndex * 15), word.y, '#0f0', 2);
 
         // Word Complete?
@@ -189,14 +274,15 @@ function processInputForWord(index, char) {
         }
     } else {
         // Mistake!
-        // Optional: Reset progress on word? or simple penalty?
-        // Let's just visual shake or sound
+        playSound('error');
+        triggerErrorFlash();
     }
 }
 
 function completeWord(index) {
     const word = gameState.activeWords[index];
     createExplosion(word.x, word.y, '#0f0');
+    playSound('explode');
     
     // Reward
     gameState.score += word.totalLength * 10;
@@ -206,6 +292,23 @@ function completeWord(index) {
     // Remove word
     gameState.activeWords.splice(index, 1);
     gameState.targetWordIndex = -1;
+}
+
+function triggerErrorFlash() {
+    const flash = document.createElement('div');
+    flash.style.position = 'absolute';
+    flash.style.top = '0';
+    flash.style.left = '0';
+    flash.style.width = '100%';
+    flash.style.height = '100%';
+    flash.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+    flash.style.pointerEvents = 'none';
+    flash.style.zIndex = '100';
+    document.body.appendChild(flash);
+    
+    setTimeout(() => {
+        document.body.removeChild(flash);
+    }, 100);
 }
 
 // =================================
