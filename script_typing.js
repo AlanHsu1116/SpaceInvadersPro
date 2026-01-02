@@ -69,6 +69,69 @@ const wordBank = {
 
 
 // =================================
+//          LEADERBOARD SYSTEM
+// =================================
+const MAX_HIGH_SCORES = 10;
+const LEADERBOARD_KEY = 'typingGameLeaderboard';
+
+function getLeaderboard() {
+    const stored = localStorage.getItem(LEADERBOARD_KEY);
+    return stored ? JSON.parse(stored) : [];
+}
+
+function saveScore(name, score, wpm) {
+    const leaderboard = getLeaderboard();
+    const newEntry = {
+        name: name,
+        score: score,
+        wpm: wpm,
+        date: new Date().toLocaleDateString()
+    };
+    
+    leaderboard.push(newEntry);
+    
+    // Sort by score (descending)
+    leaderboard.sort((a, b) => b.score - a.score);
+    
+    // Keep top N
+    if (leaderboard.length > MAX_HIGH_SCORES) {
+        leaderboard.length = MAX_HIGH_SCORES;
+    }
+    
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
+}
+
+function isHighScore(score) {
+    const leaderboard = getLeaderboard();
+    if (leaderboard.length < MAX_HIGH_SCORES) return true;
+    return score > leaderboard[leaderboard.length - 1].score;
+}
+
+function renderLeaderboard() {
+    const list = document.getElementById('leaderboardList');
+    const leaderboard = getLeaderboard();
+    
+    list.innerHTML = '';
+    
+    if (leaderboard.length === 0) {
+        list.innerHTML = '<tr><td colspan="5" style="text-align:center">NO RECORDS FOUND</td></tr>';
+        return;
+    }
+    
+    leaderboard.forEach((entry, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>#${index + 1}</td>
+            <td>${entry.name}</td>
+            <td>${entry.score}</td>
+            <td>${entry.wpm}</td>
+            <td>${entry.date}</td>
+        `;
+        list.appendChild(tr);
+    });
+}
+
+// =================================
 //          GAME STATE
 // =================================
 const canvas = document.getElementById('gameCanvas');
@@ -122,9 +185,9 @@ function spawnWord() {
     
     // Base speed + level scaling
     // Slower for single letters initially
-    let speedBase = 0.8;
-    if (gameState.level <= 2) speedBase = 0.5 + (gameState.level * 0.2); 
-    else speedBase = 1.0 + (gameState.level * 0.15);
+    let speedBase = 0.4;
+    if (gameState.level <= 2) speedBase = 0.3 + (gameState.level * 0.1); 
+    else speedBase = 0.5 + (gameState.level * 0.1);
 
     const speed = speedBase * (Math.random() * 0.5 + 0.8);
     
@@ -148,8 +211,12 @@ function updateGame(deltaTime) {
     }
     
     // Difficulty Scaling
-    // Every 5 clears = Level Up
-    gameState.level = 1 + Math.floor(gameState.wordsCleared / 5);
+    // Every 15 clears = Level Up
+    const calculatedLevel = 1 + Math.floor(gameState.wordsCleared / 15);
+    if (calculatedLevel > gameState.level) {
+        gameState.level = calculatedLevel;
+        triggerLevelUpEffect(gameState.level);
+    }
     
     // Adjust spawn interval based on level
     if (gameState.level === 1) gameState.spawnInterval = 2500;
@@ -195,6 +262,9 @@ function updateGame(deltaTime) {
 //          INPUT HANDLING
 // =================================
 window.addEventListener('keydown', (e) => {
+    // If inputting name, ignore game controls
+    if (document.activeElement === document.getElementById('playerNameInput')) return;
+    
     if (!gameState.isPlaying || gameState.isGameOver) return;
 
     // Ignore non-character keys (Shift, Ctrl, etc.)
@@ -294,6 +364,43 @@ function completeWord(index) {
     gameState.targetWordIndex = -1;
 }
 
+function triggerLevelUpEffect(newLevel) {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'absolute';
+    overlay.style.top = '50%';
+    overlay.style.left = '50%';
+    overlay.style.transform = 'translate(-50%, -50%)';
+    overlay.style.color = '#0f0';
+    overlay.style.fontSize = '80px';
+    overlay.style.fontWeight = 'bold';
+    overlay.style.textShadow = '0 0 20px #0f0, 0 0 40px #fff';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '200';
+    overlay.style.fontFamily = '"Share Tech Mono", monospace';
+    overlay.innerText = `LEVEL ${newLevel}`;
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.5s, transform 0.5s';
+    
+    document.body.appendChild(overlay);
+
+    // Animate in
+    requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+        overlay.style.transform = 'translate(-50%, -50%) scale(1.2)';
+    });
+    
+    playSound('hit'); // Use positive sound
+
+    // Animate out
+    setTimeout(() => {
+        overlay.style.opacity = '0';
+        overlay.style.transform = 'translate(-50%, -50%) scale(1.5)';
+        setTimeout(() => {
+            document.body.removeChild(overlay);
+        }, 500);
+    }, 1500);
+}
+
 function triggerErrorFlash() {
     const flash = document.createElement('div');
     flash.style.position = 'absolute';
@@ -319,7 +426,7 @@ function draw() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Trail effect
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.font = 'bold 24px "Share Tech Mono"';
+    ctx.font = 'bold 32px "Share Tech Mono"';
     ctx.textBaseline = 'middle';
     
     // Draw Words
@@ -460,6 +567,7 @@ function startGame() {
     
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('gameOverScreen').classList.add('hidden');
+    document.getElementById('leaderboardScreen').classList.add('hidden');
     
     requestAnimationFrame(gameLoop);
 }
@@ -475,6 +583,45 @@ function endGame() {
     const elapsedMin = (Date.now() - gameState.startTime) / 60000;
     const wpm = elapsedMin > 0 ? Math.floor(gameState.wordsCleared / elapsedMin) : 0;
     document.getElementById('finalWpm').textContent = wpm;
+    
+    // Check High Score
+    const inputContainer = document.getElementById('inputContainer');
+    if (isHighScore(gameState.score) && gameState.score > 0) {
+        inputContainer.classList.remove('hidden');
+        document.getElementById('playerNameInput').value = '';
+        document.getElementById('playerNameInput').focus();
+    } else {
+        inputContainer.classList.add('hidden');
+    }
+}
+
+function showLeaderboard() {
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('gameOverScreen').classList.add('hidden');
+    document.getElementById('leaderboardScreen').classList.remove('hidden');
+    renderLeaderboard();
+}
+
+function hideLeaderboard() {
+    document.getElementById('leaderboardScreen').classList.add('hidden');
+    if (gameState.isGameOver) {
+        document.getElementById('gameOverScreen').classList.remove('hidden');
+    } else {
+        document.getElementById('startScreen').classList.remove('hidden');
+    }
+}
+
+function submitScore() {
+    const nameInput = document.getElementById('playerNameInput');
+    const name = nameInput.value.trim().toUpperCase() || "UNK";
+    
+    const elapsedMin = (Date.now() - gameState.startTime) / 60000;
+    const wpm = elapsedMin > 0 ? Math.floor(gameState.wordsCleared / elapsedMin) : 0;
+
+    saveScore(name, gameState.score, wpm);
+    
+    document.getElementById('inputContainer').classList.add('hidden');
+    showLeaderboard();
 }
 
 function gameLoop() {
@@ -493,4 +640,16 @@ function gameLoop() {
 // Initial
 document.getElementById('startBtn').addEventListener('click', startGame);
 document.getElementById('restartBtn').addEventListener('click', startGame);
+
+// Leaderboard Buttons
+document.getElementById('leaderboardBtn').addEventListener('click', showLeaderboard);
+document.getElementById('gameoverLeaderboardBtn').addEventListener('click', showLeaderboard);
+document.getElementById('closeLeaderboardBtn').addEventListener('click', hideLeaderboard);
+document.getElementById('submitScoreBtn').addEventListener('click', submitScore);
+
+// Allow Enter key to submit score
+document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') submitScore();
+});
+
 draw(); // Initial draw (blank)

@@ -40,6 +40,7 @@
                 <p>Prevent words from reaching the data core.</p>
             </div>
             <button id="startBtn">INITIALIZE DEFENSE</button>
+            <button id="leaderboardBtn" style="margin-top: 20px;">HIGH SCORES</button>
         </div>
 
         <div id="gameOverScreen" class="hidden">
@@ -49,7 +50,35 @@
                 <p>Max WPM: <span id="finalWpm">0</span></p>
                 <p>Words Cleared: <span id="finalWords">0</span></p>
             </div>
+            
+            <div id="inputContainer" class="hidden" style="margin-bottom: 20px;">
+                <input type="text" id="playerNameInput" placeholder="ENTER INITIALS" maxlength="3" autocomplete="off">
+                <button id="submitScoreBtn">SAVE RECORD</button>
+            </div>
+
             <button id="restartBtn">REBOOT SYSTEM</button>
+            <button id="gameoverLeaderboardBtn" style="margin-top: 20px; border-color: #fff; color: #fff;">VIEW SCORES</button>
+        </div>
+
+        <div id="leaderboardScreen" class="hidden">
+            <h1>TOP RECORDS</h1>
+            <div class="leaderboard-container">
+                <table id="leaderboardTable">
+                    <thead>
+                        <tr>
+                            <th>RANK</th>
+                            <th>NAME</th>
+                            <th>SCORE</th>
+                            <th>WPM</th>
+                            <th>DATE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardList">
+                        <!-- Scores will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+            <button id="closeLeaderboardBtn">RETURN TO ROOT</button>
         </div>
         
         <!-- Effects overlay -->
