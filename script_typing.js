@@ -315,7 +315,11 @@ window.addEventListener('keydown', (e) => {
     // Ignore non-character keys (Shift, Ctrl, etc.)
     if (e.key.length !== 1) return;
 
-    const char = e.key.toLowerCase();
+    handleGameInput(e.key);
+});
+
+function handleGameInput(char) {
+    char = char.toLowerCase();
     
     // Level 1-2: Single Letter Mode (No locking required)
     if (gameState.level <= 2) {
@@ -371,7 +375,35 @@ window.addEventListener('keydown', (e) => {
         // We have a target
         processInputForWord(gameState.targetWordIndex, char);
     }
-});
+}
+
+// Mobile Input Support
+const mobileInput = document.getElementById('mobileInput');
+if (mobileInput) {
+    mobileInput.addEventListener('input', (e) => {
+        if (!gameState.isPlaying || gameState.isGameOver) return;
+        if (e.target.value.length > 0) {
+            const char = e.target.value.slice(-1);
+            if (char.match(/[a-z]/i)) { // Ensure it's a letter
+                handleGameInput(char);
+            }
+            e.target.value = '';
+        }
+    });
+    
+    function focusMobileInput() {
+        if (gameState.isPlaying && !gameState.isGameOver) {
+            mobileInput.focus();
+        }
+    }
+    
+    window.addEventListener('touchstart', focusMobileInput);
+    window.addEventListener('click', (e) => {
+        if (e.target !== document.getElementById('playerNameInput')) {
+            focusMobileInput();
+        }
+    });
+}
 
 function processInputForWord(index, char) {
     const word = gameState.activeWords[index];
@@ -381,7 +413,8 @@ function processInputForWord(index, char) {
         // Match!
         word.matchedIndex++;
         playSound('hit');
-        createParticles(word.x + (word.matchedIndex * 15), word.y, '#0f0', 2);
+        // Adjusted for larger font (approx 35px per char)
+        createParticles(word.x + (word.matchedIndex * 35), word.y, '#0f0', 2);
 
         // Word Complete?
         if (word.matchedIndex === word.totalLength) {
@@ -475,7 +508,7 @@ function draw() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Trail effect
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.font = 'bold 32px "Share Tech Mono"';
+    ctx.font = 'bold 64px "Share Tech Mono"'; // Doubled Font Size
     ctx.textBaseline = 'middle';
     
     // Draw Words
@@ -492,13 +525,13 @@ function draw() {
             ctx.strokeStyle = 'rgba(0, 255, 0, 0.3)';
             ctx.beginPath();
             ctx.moveTo(canvas.width / 2, canvas.height);
-            ctx.lineTo(word.x, word.y + 10);
+            ctx.lineTo(word.x, word.y + 20); // Adjusted offset for larger font
             ctx.stroke();
             
             // Highlight Box
             ctx.strokeStyle = '#0f0';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(startX - 5, word.y - 15, width + 10, 30);
+            ctx.lineWidth = 3; // Thicker line for larger text
+            ctx.strokeRect(startX - 10, word.y - 35, width + 20, 70); // Adjusted box size
         }
 
         // Draw text characters

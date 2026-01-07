@@ -295,9 +295,22 @@ tr:last-child td {
     border-bottom: none;
 }
 
-tr:nth-child(even) {
-    background-color: rgba(0, 255, 0, 0.05);
+/* Hidden Mobile Input */
+#mobileInput {
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+    opacity: 0;
+    pointer-events: none; /* We will focus it programmatically */
 }
+
+/* Ensure buttons are touch-friendly */
+button {
+    min-height: 44px; /* Minimum touch target size */
+    touch-action: manipulation;
+}
+
+
 
 #playerNameInput {
     background: transparent;
