@@ -355,3 +355,53 @@ canvas {
     background: rgba(255, 51, 102, 0.5);
     box-shadow: 0 0 15px #ff3366;
 }
+
+/* =========================================
+   RESPONSIVE / MOBILE STYLES
+   ========================================= */
+@media (max-width: 768px) {
+    .menu-title {
+        font-size: 40px;
+        margin-bottom: 30px;
+        margin-top: 20px;
+    }
+
+    /* Horizontal Scroll List for Game Cards */
+    .game-grid {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap; /* Prevent wrapping */
+        justify-content: flex-start;
+        align-items: center;
+        overflow-x: auto; /* Enable horizontal scrolling */
+        width: 100%;
+        padding: 20px 20px 40px 20px; /* Extra bottom padding for scroll space */
+        gap: 20px;
+        scroll-snap-type: x mandatory; /* Snap effect */
+        
+        /* Hide scrollbar */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+
+    /* Hide scrollbar for Chrome/Safari */
+    .game-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .game-card {
+        flex: 0 0 75vw; /* Card width relative to viewport */
+        width: auto;
+        height: 350px; /* Slightly taller for safety */
+        scroll-snap-align: center; /* Center when scrolling stops */
+        margin: 0;
+    }
+
+    #gameContainer {
+        border-width: 2px;
+    }
+    
+    #controlsGuide {
+        display: none; /* Hide PC controls guide on mobile */
+    }
+}
