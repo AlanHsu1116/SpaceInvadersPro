@@ -757,6 +757,17 @@ function handleBackClick() {
         gameState.isPlaying = false;
         gameState.isGameOver = false;
         
+        // Stop Music
+        if (isMusicPlaying) {
+            bgm.pause();
+            isMusicPlaying = false;
+            bgmBtn.textContent = '🔊'; // Reset icon to "sound on" (ready to play) or "off"?
+            // Let's reset to "off" state visually if we paused it, or keep it consistent?
+            // Actually, if we stop it, we should reflect that.
+            bgmBtn.textContent = '🔇';
+            bgmBtn.style.opacity = '0.5';
+        }
+
         // Hide everything else
         document.getElementById('hud').classList.add('hidden');
         document.getElementById('gameOverScreen').classList.add('hidden');
