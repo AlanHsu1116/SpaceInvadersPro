@@ -151,7 +151,11 @@ let gameState = {
     spawnTimer: 0,
     spawnInterval: 2000, // ms
     difficultyMultiplier: 1.0,
-    targetWordIndex: -1 // Index of the word currently being typed (-1 if none)
+    targetWordIndex: -1, // Index of the word currently being typed (-1 if none)
+    levelScore: 0,      // Score earned in current level
+    levelTarget: 0,      // Score needed to pass current level
+    gameMode: 'arcade',  // 'arcade' or 'practice'
+    practiceDifficulty: 'easy' // 'easy', 'medium', 'hard'
 };
 
 // =================================
@@ -169,6 +173,26 @@ resizeCanvas();
 //          LOGIC
 // =================================
 function getRandomWord() {
+    if (gameState.gameMode === 'practice') {
+        let pool;
+        switch (gameState.practiceDifficulty) {
+            case 'easy':
+                // Mix letters and easy words
+                pool = [...wordBank.letters, ...wordBank.easy];
+                break;
+            case 'medium':
+                pool = [...wordBank.easy, ...wordBank.medium];
+                break;
+            case 'hard':
+                pool = [...wordBank.medium, ...wordBank.hard];
+                break;
+            default:
+                pool = wordBank.easy;
+        }
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    // Arcade Mode Logic
     let pool;
     if (gameState.level <= 2) pool = wordBank.letters; // Level 1-2: Single letters
     else if (gameState.level === 3) pool = wordBank.easy;
@@ -178,13 +202,21 @@ function getRandomWord() {
     return pool[Math.floor(Math.random() * pool.length)];
 }
 
+function calculateLevelTarget(level) {
+    // Base words needed: 10 + (level * 2)
+    // Points per word: level
+    // Target = Words * Points
+    const wordsNeeded = 10 + (level * 2);
+    return wordsNeeded * level;
+}
+
 function spawnWord() {
     const text = getRandomWord();
     const margin = 100;
     const x = Math.random() * (canvas.width - margin * 2) + margin;
     
     // Base speed + level scaling
-    // Slower for single letters initially
+    // Slower base speed, scales slightly with level
     let speedBase = 0.4;
     if (gameState.level <= 2) speedBase = 0.3 + (gameState.level * 0.1); 
     else speedBase = 0.5 + (gameState.level * 0.1);
@@ -203,25 +235,26 @@ function spawnWord() {
 }
 
 function updateGame(deltaTime) {
-    // Timer
+    // Timer Logic
     gameState.timeRemaining -= deltaTime;
+    
+    // Check Level End
     if (gameState.timeRemaining <= 0) {
-        endGame();
+        if (gameState.levelScore >= gameState.levelTarget) {
+            // Level Passed
+            advanceLevel();
+        } else {
+            // Failed
+            gameState.timeRemaining = 0;
+            endGame();
+        }
         return;
     }
     
-    // Difficulty Scaling
-    // Every 15 clears = Level Up
-    const calculatedLevel = 1 + Math.floor(gameState.wordsCleared / 15);
-    if (calculatedLevel > gameState.level) {
-        gameState.level = calculatedLevel;
-        triggerLevelUpEffect(gameState.level);
-    }
-    
-    // Adjust spawn interval based on level
-    if (gameState.level === 1) gameState.spawnInterval = 2500;
-    else if (gameState.level === 2) gameState.spawnInterval = 2000;
-    else gameState.spawnInterval = Math.max(500, 1800 - (gameState.level * 100));
+    // Adjust spawn interval based on level (slightly faster as level increases)
+    if (gameState.level === 1) gameState.spawnInterval = 2000;
+    else if (gameState.level === 2) gameState.spawnInterval = 1800;
+    else gameState.spawnInterval = Math.max(600, 1800 - (gameState.level * 120));
 
     // Spawning
     gameState.spawnTimer += deltaTime * 1000;
@@ -237,8 +270,8 @@ function updateGame(deltaTime) {
 
         // Check bounds (reached bottom)
         if (word.y > canvas.height) {
-            // Penalty: huge time loss
-            gameState.timeRemaining -= 5;
+            // Penalty: Time loss
+            gameState.timeRemaining -= 3;
             createExplosion(word.x, canvas.height, '#f00');
             playSound('error');
             gameState.activeWords.splice(i, 1);
@@ -247,15 +280,27 @@ function updateGame(deltaTime) {
             if (i === gameState.targetWordIndex) {
                 gameState.targetWordIndex = -1;
             } else if (i < gameState.targetWordIndex) {
-                // If a word before the target was removed, shift index
                 gameState.targetWordIndex--;
             }
             
             triggerScreenShake();
+            triggerErrorFlash();
         }
     }
 
     updateParticles();
+}
+
+function advanceLevel() {
+    gameState.level++;
+    gameState.timeRemaining = 60; // Reset timer
+    gameState.levelScore = 0;     // Reset level score
+    gameState.levelTarget = calculateLevelTarget(gameState.level);
+    gameState.activeWords = [];   // Clear screen
+    gameState.targetWordIndex = -1;
+    
+    triggerLevelUpEffect(gameState.level);
+    playSound('hit');
 }
 
 // =================================
@@ -355,9 +400,13 @@ function completeWord(index) {
     playSound('explode');
     
     // Reward
-    gameState.score += word.totalLength * 10;
+    // Scoring: Level 1 = 1 point, Level 2 = 2 points...
+    const points = gameState.level;
+    gameState.score += points;
+    gameState.levelScore += points;
+    
     gameState.wordsCleared++;
-    gameState.timeRemaining += 2; // Time bonus
+    gameState.timeRemaining += 0.5; // Small Time bonus
     
     // Remove word
     gameState.activeWords.splice(index, 1);
@@ -487,6 +536,20 @@ function updateUI() {
     document.getElementById('scoreDisplay').textContent = gameState.score;
     document.getElementById('levelDisplay').textContent = gameState.level;
     
+    // Update Goal Display
+    const goalEl = document.getElementById('goalDisplay');
+    if (goalEl) {
+        goalEl.textContent = `${gameState.levelScore} / ${gameState.levelTarget}`;
+        // Color indication
+        if (gameState.levelScore >= gameState.levelTarget) {
+            goalEl.style.color = '#0f0';
+            goalEl.style.textShadow = '0 0 10px #0f0';
+        } else {
+            goalEl.style.color = '#fff';
+            goalEl.style.textShadow = 'none';
+        }
+    }
+    
     const timeEl = document.getElementById('timeDisplay');
     timeEl.textContent = Math.ceil(gameState.timeRemaining);
     if (gameState.timeRemaining <= 10) timeEl.classList.add('warning');
@@ -562,7 +625,9 @@ function startGame() {
         spawnTimer: 0,
         spawnInterval: 2000,
         difficultyMultiplier: 1.0,
-        targetWordIndex: -1
+        targetWordIndex: -1,
+        levelScore: 0,
+        levelTarget: calculateLevelTarget(1) // Initial target
     };
     
     document.getElementById('startScreen').classList.add('hidden');

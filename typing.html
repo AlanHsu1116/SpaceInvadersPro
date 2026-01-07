@@ -28,6 +28,10 @@
                 <div class="label">LEVEL</div>
                 <div id="levelDisplay">1</div>
             </div>
+            <div class="stat-box">
+                <div class="label">GOAL</div>
+                <div id="goalDisplay">0/0</div>
+            </div>
         </div>
 
         <canvas id="gameCanvas"></canvas>
@@ -40,7 +44,27 @@
                 <p>Prevent words from reaching the data core.</p>
             </div>
             <button id="startBtn">INITIALIZE DEFENSE</button>
+            <button id="practiceBtn" style="margin-top: 20px; border-color: #0aa; color: #0aa;">PRACTICE MODE</button>
             <button id="leaderboardBtn" style="margin-top: 20px;">HIGH SCORES</button>
+        </div>
+
+        <div id="practiceScreen" class="hidden">
+            <h1>SELECT DIFFICULTY</h1>
+            <div class="difficulty-container">
+                <button class="diff-btn" data-diff="easy" style="border-color: #0f0; color: #0f0;">
+                    <div class="diff-title">EASY</div>
+                    <div class="diff-desc">Short Words • Slow Speed</div>
+                </button>
+                <button class="diff-btn" data-diff="medium" style="border-color: #ff0; color: #ff0;">
+                    <div class="diff-title">MEDIUM</div>
+                    <div class="diff-desc">Mixed Words • Normal Speed</div>
+                </button>
+                <button class="diff-btn" data-diff="hard" style="border-color: #f00; color: #f00;">
+                    <div class="diff-title">HARD</div>
+                    <div class="diff-desc">Long Words • Fast Speed</div>
+                </button>
+            </div>
+            <button id="backToStartBtn" style="margin-top: 40px;">← RETURN</button>
         </div>
 
         <div id="gameOverScreen" class="hidden">
