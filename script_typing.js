@@ -740,6 +740,7 @@ function startGame() {
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('gameOverScreen').classList.add('hidden');
     document.getElementById('leaderboardScreen').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
     
     requestAnimationFrame(gameLoop);
 }
