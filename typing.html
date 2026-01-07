@@ -16,8 +16,10 @@
 </head>
 <body>
     <div id="gameWrapper">
-        <button id="backToMenuBtn" onclick="window.location.href='index.html'">← 遊戲選單</button>
-        <button id="bgmBtn" class="control-btn">🔊</button>
+        <div id="top-controls">
+            <button id="backToMenuBtn" onclick="handleBackClick()">← 主選單</button>
+            <button id="bgmBtn" class="control-btn">🔊</button>
+        </div>
         
         <div id="hud" class="hidden">
             <div class="stat-box">

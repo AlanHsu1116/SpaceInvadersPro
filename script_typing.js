@@ -742,7 +742,36 @@ function startGame() {
     document.getElementById('leaderboardScreen').classList.add('hidden');
     document.getElementById('hud').classList.remove('hidden');
     
+    // Change back button text to "離開遊戲" when game starts
+    document.getElementById('backToMenuBtn').textContent = '← 離開遊戲';
+    
     requestAnimationFrame(gameLoop);
+}
+
+function handleBackClick() {
+    // If in game, game over, or in practice/leaderboard sub-screens
+    const isAtStartScreen = !document.getElementById('startScreen').classList.contains('hidden');
+    
+    if (!isAtStartScreen) {
+        // Return to Mode Selection (Start Screen)
+        gameState.isPlaying = false;
+        gameState.isGameOver = false;
+        
+        // Hide everything else
+        document.getElementById('hud').classList.add('hidden');
+        document.getElementById('gameOverScreen').classList.add('hidden');
+        document.getElementById('practiceScreen').classList.add('hidden');
+        document.getElementById('leaderboardScreen').classList.add('hidden');
+        
+        // Show start screen
+        document.getElementById('startScreen').classList.remove('hidden');
+        
+        // Reset button text back to "主選單"
+        document.getElementById('backToMenuBtn').textContent = '← 主選單';
+    } else {
+        // Already at start screen, exit to Arcade Center
+        window.location.href = 'index.html';
+    }
 }
 
 function endGame() {
