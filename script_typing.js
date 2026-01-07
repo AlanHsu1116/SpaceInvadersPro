@@ -158,12 +158,20 @@ let gameState = {
     practiceDifficulty: 'easy' // 'easy', 'medium', 'hard'
 };
 
+let currentFontSize = 64;
+
 // =================================
 //          SETUP & RESIZE
 // =================================
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    // Dynamic Font Size: 64px on Desktop, scale down on Mobile
+    // Allow approx 10-12 chars width on screen
+    currentFontSize = Math.min(64, Math.floor(window.innerWidth / 12));
+    // Minimum readable size
+    currentFontSize = Math.max(24, currentFontSize);
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
@@ -212,8 +220,18 @@ function calculateLevelTarget(level) {
 
 function spawnWord() {
     const text = getRandomWord();
-    const margin = 100;
-    const x = Math.random() * (canvas.width - margin * 2) + margin;
+    
+    // Estimate width based on font size (approx 0.6 aspect ratio for monospace)
+    const estimatedWidth = text.length * (currentFontSize * 0.6);
+    const margin = estimatedWidth / 2 + 20; // Half width + padding
+    
+    // Ensure safe spawn area
+    let x;
+    if (canvas.width > margin * 2) {
+        x = Math.random() * (canvas.width - margin * 2) + margin;
+    } else {
+        x = canvas.width / 2; // Center if screen is too narrow
+    }
     
     // Base speed + level scaling
     // Slower base speed, scales slightly with level
@@ -226,7 +244,7 @@ function spawnWord() {
     gameState.activeWords.push({
         text: text,
         x: x,
-        y: -30,
+        y: -currentFontSize, // Start just above screen
         speed: speed,
         matchedIndex: 0, // How many chars have been typed correctly
         totalLength: text.length,
@@ -413,8 +431,13 @@ function processInputForWord(index, char) {
         // Match!
         word.matchedIndex++;
         playSound('hit');
-        // Adjusted for larger font (approx 35px per char)
-        createParticles(word.x + (word.matchedIndex * 35), word.y, '#0f0', 2);
+        // Adjusted for dynamic font size (approx 0.6 width ratio)
+        const charWidth = currentFontSize * 0.6;
+        // Start X - Half Width + Typed * Width
+        const startX = word.x - (ctx.measureText(word.text).width / 2);
+        const particleX = startX + (word.matchedIndex * charWidth);
+        
+        createParticles(particleX, word.y, '#0f0', 2);
 
         // Word Complete?
         if (word.matchedIndex === word.totalLength) {
@@ -508,7 +531,7 @@ function draw() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Trail effect
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.font = 'bold 64px "Share Tech Mono"'; // Doubled Font Size
+    ctx.font = `bold ${currentFontSize}px "Share Tech Mono"`;
     ctx.textBaseline = 'middle';
     
     // Draw Words
@@ -525,13 +548,19 @@ function draw() {
             ctx.strokeStyle = 'rgba(0, 255, 0, 0.3)';
             ctx.beginPath();
             ctx.moveTo(canvas.width / 2, canvas.height);
-            ctx.lineTo(word.x, word.y + 20); // Adjusted offset for larger font
+            ctx.lineTo(word.x, word.y + (currentFontSize * 0.3)); 
             ctx.stroke();
             
             // Highlight Box
+            const padding = currentFontSize * 0.2;
             ctx.strokeStyle = '#0f0';
-            ctx.lineWidth = 3; // Thicker line for larger text
-            ctx.strokeRect(startX - 10, word.y - 35, width + 20, 70); // Adjusted box size
+            ctx.lineWidth = Math.max(2, currentFontSize / 20);
+            ctx.strokeRect(
+                startX - padding, 
+                word.y - (currentFontSize * 0.6), 
+                width + (padding * 2), 
+                currentFontSize * 1.2
+            );
         }
 
         // Draw text characters
