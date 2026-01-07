@@ -703,8 +703,38 @@ function gameLoop() {
 }
 
 // Initial
-document.getElementById('startBtn').addEventListener('click', startGame);
-document.getElementById('restartBtn').addEventListener('click', startGame);
+document.getElementById('startBtn').addEventListener('click', () => {
+    gameState.gameMode = 'arcade';
+    startGame();
+});
+document.getElementById('restartBtn').addEventListener('click', () => {
+    // Restart logic should respect previous mode or default to arcade?
+    // For simplicity, let's keep the last mode or default to arcade if undefined
+    if (!gameState.gameMode) gameState.gameMode = 'arcade';
+    startGame();
+});
+
+// Practice Mode
+document.getElementById('practiceBtn').addEventListener('click', () => {
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('practiceScreen').classList.remove('hidden');
+});
+
+document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const difficulty = btn.getAttribute('data-diff');
+        gameState.gameMode = 'practice';
+        gameState.practiceDifficulty = difficulty;
+        
+        document.getElementById('practiceScreen').classList.add('hidden');
+        startGame();
+    });
+});
+
+document.getElementById('backToStartBtn').addEventListener('click', () => {
+    document.getElementById('practiceScreen').classList.add('hidden');
+    document.getElementById('startScreen').classList.remove('hidden');
+});
 
 // Leaderboard Buttons
 document.getElementById('leaderboardBtn').addEventListener('click', showLeaderboard);
