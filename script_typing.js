@@ -423,6 +423,51 @@ if (mobileInput) {
     });
 }
 
+// =================================
+//          BGM SYSTEM
+// =================================
+const bgm = document.getElementById('bgm');
+const bgmBtn = document.getElementById('bgmBtn');
+let isMusicPlaying = false;
+
+function toggleMusic() {
+    if (bgm.paused) {
+        bgm.play().then(() => {
+            isMusicPlaying = true;
+            bgmBtn.textContent = '🔊';
+            bgmBtn.style.opacity = '1';
+        }).catch(e => console.log("Audio play failed:", e));
+    } else {
+        bgm.pause();
+        isMusicPlaying = false;
+        bgmBtn.textContent = '🔇';
+        bgmBtn.style.opacity = '0.5';
+    }
+}
+
+// Try to play on first user interaction (browser policy)
+function initAudio() {
+    // Only try if we haven't started yet and user wants music (default off or waiting for interaction)
+    // Actually, let's just enable the button to work.
+    // If we want auto-play, we can try, but it's better to let user toggle or start on "Start Game"
+}
+
+bgmBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Don't trigger mobile input focus
+    toggleMusic();
+});
+
+// Start music when game starts if not already playing?
+// Let's hook into startGame
+const originalStartGame = startGame;
+startGame = function() {
+    if (bgm.paused && !isMusicPlaying) {
+        // First start, try to play
+        toggleMusic();
+    }
+    originalStartGame();
+};
+
 function processInputForWord(index, char) {
     const word = gameState.activeWords[index];
     const expectedChar = word.text[word.matchedIndex];

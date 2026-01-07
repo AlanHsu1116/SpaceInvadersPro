@@ -17,8 +17,9 @@
 <body>
     <div id="gameWrapper">
         <button id="backToMenuBtn" onclick="window.location.href='index.html'">← ARCADE MENU</button>
+        <button id="bgmBtn" class="control-btn">🔊</button>
         
-        <div id="ui-layer">
+        <div id="hud">
             <div class="stat-box">
                 <div class="label">SCORE</div>
                 <div id="scoreDisplay">0</div>
@@ -118,6 +119,9 @@
 
     <!-- Hidden Input for Mobile Support -->
     <input type="text" id="mobileInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+    <!-- BGM -->
+    <audio id="bgm" src="Feel-Good.mp3" loop></audio>
 
     <script src="script_typing.js"></script>
 </body>
