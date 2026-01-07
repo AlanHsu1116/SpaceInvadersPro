@@ -68,12 +68,15 @@ html, body {
 #hud {
     position: absolute;
     top: 60px; /* Below controls */
-    left: 10px;
-    right: 10px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 20px;
     pointer-events: none;
     z-index: 10;
+    width: auto;
+    white-space: nowrap;
 }
 
 .stat-box {
