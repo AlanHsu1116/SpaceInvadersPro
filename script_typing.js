@@ -45,7 +45,9 @@ function playSound(type) {
 const wordBank = {
     letters: [
         "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
-        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
     ],
     easy: [
         "code", "data", "byte", "node", "java", "ruby", "perl", "bash", "hack", "wifi",
@@ -167,10 +169,8 @@ function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // Dynamic Font Size: 64px on Desktop, scale down on Mobile
-    // Allow approx 10-12 chars width on screen
-    currentFontSize = Math.min(64, Math.floor(window.innerWidth / 12));
-    // Minimum readable size
+    // Clarity focused font size: around 16-24pt (21-32px)
+    currentFontSize = Math.min(40, Math.floor(window.innerWidth / 15));
     currentFontSize = Math.max(24, currentFontSize);
 }
 window.addEventListener('resize', resizeCanvas);
@@ -337,7 +337,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 function handleGameInput(char) {
-    char = char.toLowerCase();
+    // Case sensitive typing
     
     // Level 1-2: Single Letter Mode (No locking required)
     if (gameState.level <= 2) {
@@ -482,7 +482,7 @@ function processInputForWord(index, char) {
         const startX = word.x - (ctx.measureText(word.text).width / 2);
         const particleX = startX + (word.matchedIndex * charWidth);
         
-        createParticles(particleX, word.y, '#0f0', 2);
+        createParticles(particleX, word.y, '#fff', 2);
 
         // Word Complete?
         if (word.matchedIndex === word.totalLength) {
@@ -497,7 +497,7 @@ function processInputForWord(index, char) {
 
 function completeWord(index) {
     const word = gameState.activeWords[index];
-    createExplosion(word.x, word.y, '#0f0');
+    createExplosion(word.x, word.y, '#fff');
     playSound('explode');
     
     // Reward
@@ -520,13 +520,13 @@ function triggerLevelUpEffect(newLevel) {
     overlay.style.top = '50%';
     overlay.style.left = '50%';
     overlay.style.transform = 'translate(-50%, -50%)';
-    overlay.style.color = '#0f0';
+    overlay.style.color = '#fff';
     overlay.style.fontSize = '80px';
     overlay.style.fontWeight = 'bold';
-    overlay.style.textShadow = '0 0 20px #0f0, 0 0 40px #fff';
+    overlay.style.textShadow = '0 0 20px #fff, 0 0 40px #888';
     overlay.style.pointerEvents = 'none';
     overlay.style.zIndex = '200';
-    overlay.style.fontFamily = '"Share Tech Mono", monospace';
+    overlay.style.fontFamily = 'Consolas, Monaco, "Courier New", monospace';
     overlay.innerText = `LEVEL ${newLevel}`;
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity 0.5s, transform 0.5s';
@@ -576,7 +576,7 @@ function draw() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Trail effect
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.font = `bold ${currentFontSize}px "Share Tech Mono"`;
+    ctx.font = `bold ${currentFontSize}px Consolas, Monaco, "Courier New", monospace`;
     ctx.textBaseline = 'middle';
     
     // Draw Words
@@ -590,7 +590,7 @@ function draw() {
 
         // Draw Line connection to target
         if (isTarget) {
-            ctx.strokeStyle = 'rgba(0, 255, 0, 0.3)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
             ctx.beginPath();
             ctx.moveTo(canvas.width / 2, canvas.height);
             ctx.lineTo(word.x, word.y + (currentFontSize * 0.3)); 
@@ -598,7 +598,7 @@ function draw() {
             
             // Highlight Box
             const padding = currentFontSize * 0.2;
-            ctx.strokeStyle = '#0f0';
+            ctx.strokeStyle = '#fff';
             ctx.lineWidth = Math.max(2, currentFontSize / 20);
             ctx.strokeRect(
                 startX - padding, 
@@ -614,18 +614,18 @@ function draw() {
             const char = word.text[i];
             
             if (i < word.matchedIndex) {
-                // Already typed: Bright Green
-                ctx.fillStyle = '#0f0'; 
+                // Already typed: Bright White
+                ctx.fillStyle = '#fff'; 
                 ctx.shadowBlur = 10;
-                ctx.shadowColor = '#0f0';
+                ctx.shadowColor = '#fff';
             } else if (i === word.matchedIndex && isTarget) {
                 // Next to type: White/Yellow
                 ctx.fillStyle = '#fff';
                 ctx.shadowBlur = 5;
                 ctx.shadowColor = '#fff';
             } else {
-                // Remaining: Dark Green / Gray
-                ctx.fillStyle = '#005500';
+                // Remaining: Dark Gray
+                ctx.fillStyle = '#444';
                 ctx.shadowBlur = 0;
             }
 

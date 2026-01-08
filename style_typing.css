@@ -6,8 +6,8 @@ html, body {
     width: 100%;
     height: 100%;
     background-color: #000;
-    color: #0f0;
-    font-family: 'Share Tech Mono', monospace;
+    color: #fff;
+    font-family: Consolas, Monaco, 'Courier New', monospace;
     overflow: hidden;
     user-select: none;
     -webkit-user-select: none; /* Safari */
@@ -39,23 +39,23 @@ html, body {
     pointer-events: auto; /* Re-enable clicks on buttons */
     background: rgba(0, 0, 0, 0.8);
     padding: 10px 20px;
-    font-size: 18px;
+    font-size: 16pt;
     margin: 0;
 }
 
 #backToMenuBtn {
-    border-color: #0f0;
-    color: #0f0;
+    border-color: #fff;
+    color: #fff;
 }
 
 #bgmBtn {
     border: none;
     background: transparent;
-    color: #0f0;
+    color: #fff;
     min-width: 40px;
     padding: 10px;
     box-shadow: none;
-    font-size: 24px; /* Make icon slightly larger since border is gone */
+    font-size: 20pt; /* Make icon slightly larger since border is gone */
 }
 
 #bgmBtn:hover {
@@ -80,23 +80,23 @@ html, body {
 }
 
 .stat-box {
-    border: 1px solid #0f0;
-    background: rgba(0, 20, 0, 0.8);
+    border: 1px solid #fff;
+    background: rgba(0, 0, 0, 0.9);
     padding: 10px 20px;
     text-align: center;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 .label {
-    font-size: 12px;
-    color: #0a0;
+    font-size: 10pt;
+    color: #888;
     margin-bottom: 5px;
 }
 
 #scoreDisplay, #timeDisplay, #wpmDisplay, #levelDisplay, #goalDisplay {
-    font-size: 24px;
+    font-size: 16pt;
     font-weight: bold;
-    text-shadow: 0 0 5px #0f0;
+    text-shadow: 0 0 5px #fff;
 }
 
 .warning {
@@ -121,7 +121,7 @@ canvas {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -135,9 +135,9 @@ canvas {
 }
 
 h1 {
-    font-size: 64px;
+    font-size: 48pt;
     margin-bottom: 20px;
-    text-shadow: 0 0 20px #0f0;
+    text-shadow: 0 0 20px #fff;
     text-align: center;
 }
 
@@ -154,45 +154,46 @@ h1 {
 
 input[type="text"] {
     background: transparent;
-    border: 2px solid #0f0;
-    color: #0f0;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 32px;
+    border: 2px solid #fff;
+    color: #fff;
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    font-size: 24pt;
     padding: 10px;
     text-align: center;
     text-transform: uppercase;
     outline: none;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     width: 300px;
 }
 
 input[type="text"]:focus {
-    background: rgba(0, 255, 0, 0.1);
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
 /* Buttons */
 button {
     background: transparent;
-    border: 2px solid #0f0;
-    color: #0f0;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 24px;
+    border: 2px solid #fff;
+    color: #fff;
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    font-size: 16pt;
     padding: 15px 40px;
     cursor: pointer;
     margin: 10px;
     transition: all 0.2s;
-    text-shadow: 0 0 5px #0f0;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
+    text-shadow: 0 0 5px #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     min-height: 44px; /* Minimum touch target size */
     touch-action: manipulation;
 }
 
 button:hover {
-    background: #0f0;
+    background: #fff;
     color: #000;
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
 }
+
 
 #practiceBtn:hover {
     background: #0aa;
