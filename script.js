@@ -81,7 +81,7 @@ const soundManager = {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         
         let targetBgm = this.bgmAudio;
-        if (level === 10) {
+        if (level === 10 || level === 15) {
             targetBgm = this.finalBossBgmAudio;
         } else if (levelConfig[level] && levelConfig[level].isBoss) {
             targetBgm = this.bossBgmAudio;
@@ -339,7 +339,12 @@ const levelConfig = {
     7: { rows: 5, cols: 10, speed: 3.0, fireRate: 0.0015 },
     8: { rows: 6, cols: 10, speed: 3.2, fireRate: 0.0018 },
     9: { rows: 6, cols: 11, speed: 3.5, fireRate: 0.002 },
-    10: { isBoss: true, hp: 80, speed: 3.6, fireRate: 0.012 }, // Final Boss (Reduced strength by 20%)
+    10: { isBoss: true, hp: 80, speed: 3.6, fireRate: 0.012 }, // Fake Final Boss
+    11: { rows: 6, cols: 12, speed: 3.8, fireRate: 0.0022 },
+    12: { rows: 7, cols: 12, speed: 4.0, fireRate: 0.0025 },
+    13: { rows: 7, cols: 13, speed: 4.2, fireRate: 0.0028 },
+    14: { rows: 8, cols: 14, speed: 4.5, fireRate: 0.003 },
+    15: { isBoss: true, hp: 120, speed: 4.0, fireRate: 0.015 }, // True Final Boss
 };
 
 
@@ -411,7 +416,7 @@ function createEnemies() {
 }
 
 function createBoss(config) {
-    const isFinal = gameState.level === 10;
+    const isFinal = gameState.level === 15;
     gameState.boss = {
         x: canvas.width / 2 - 75,
         y: 80,
