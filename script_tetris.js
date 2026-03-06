@@ -1,31 +1,19 @@
 /**
- * TETRIS PRO - Game Logic
- * Retro-Futuristic Aesthetic with Emoji Sprites
+ * TETRIS PRO - Robust Game Logic
  */
 
-// --- Configuration & Constants ---
+// --- Configuration ---
 const COLS = 10;
 const ROWS = 20;
 const BLOCK_SIZE = 30;
 
 const COLORS = {
-    I: '#00f2ff', // Cyan
-    J: '#0077ff', // Blue
-    L: '#ffaa00', // Orange
-    O: '#ffff00', // Yellow
-    S: '#00ff00', // Green
-    T: '#bf00ff', // Purple
-    Z: '#ff0000'  // Red
+    I: '#00f2ff', J: '#0077ff', L: '#ffaa00',
+    O: '#ffff00', S: '#00ff00', T: '#bf00ff', Z: '#ff0000'
 };
 
 const EMOJIS = {
-    I: '💎',
-    J: '🔵',
-    L: '🟠',
-    O: '🟡',
-    S: '🟢',
-    T: '🟣',
-    Z: '🔴'
+    I: '💎', J: '🔵', L: '🟠', O: '🟡', S: '🟢', T: '🟣', Z: '🔴'
 };
 
 const SHAPES = {
@@ -41,15 +29,9 @@ const SHAPES = {
 // --- Game State ---
 let canvas, ctx, nextCanvas, nextCtx;
 let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-let score = 0;
-let level = 1;
-let lines = 0;
-let gameOver = false;
-let paused = false;
-let gameStarted = false;
-let dropCounter = 0;
-let dropInterval = 1000;
-let lastTime = 0;
+let score = 0, level = 1, lines = 0;
+let gameOver = false, paused = false, gameStarted = false;
+let dropCounter = 0, dropInterval = 1000, lastTime = 0;
 
 let player = {
     pos: { x: 0, y: 0 },
@@ -60,53 +42,23 @@ let player = {
 
 // --- Audio ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const bgm = document.getElementById('bgm');
 let isBGMMuted = true;
-
-function toggleBGM() {
-    isBGMMuted = !isBGMMuted;
-    const btn = document.getElementById('bgmBtn');
-    btn.textContent = isBGMMuted ? "🔇 音樂: 關" : "🎵 音樂: 開";
-    
-    if (isBGMMuted) {
-        bgm.pause();
-    } else if (gameStarted && !gameOver && !paused) {
-        bgm.play();
-    }
-}
 
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    
-    if (type === 'move') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(220, now + 0.05);
-        gain.gain.setValueAtTime(0.05, now);
-    } else if (type === 'rotate') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(660, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
-        gain.gain.setValueAtTime(0.05, now);
-    } else if (type === 'drop') {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(110, now);
-        osc.frequency.exponentialRampToValueAtTime(55, now + 0.1);
-        gain.gain.setValueAtTime(0.1, now);
-    } else if (type === 'clear') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, now);
-        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.2);
-        gain.gain.setValueAtTime(0.1, now);
-    }
-
     osc.connect(gain);
     gain.connect(audioCtx.destination);
+    
+    if (type === 'move') { osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); gain.gain.setValueAtTime(0.02, now); }
+    else if (type === 'rotate') { osc.type = 'triangle'; osc.frequency.setValueAtTime(660, now); gain.gain.setValueAtTime(0.02, now); }
+    else if (type === 'drop') { osc.type = 'square'; osc.frequency.setValueAtTime(110, now); gain.gain.setValueAtTime(0.05, now); }
+    else if (type === 'clear') { osc.type = 'sine'; osc.frequency.setValueAtTime(880, now); gain.gain.setValueAtTime(0.05, now); }
+
     osc.start();
-    osc.stop(now + 0.2);
+    osc.stop(now + 0.1);
 }
 
 // --- Initialization ---
@@ -118,24 +70,21 @@ function init() {
 
     document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('restartBtn').addEventListener('click', startGame);
-    document.getElementById('resumeBtn').addEventListener('click', resumeGame);
-    document.getElementById('bgmBtn').addEventListener('click', toggleBGM);
+    document.getElementById('resumeBtn').addEventListener('click', () => {
+        paused = false;
+        document.getElementById('pauseScreen').classList.add('hidden');
+    });
 
     document.addEventListener('keydown', handleKeyPress);
-
-    // Initial draw
-    draw();
+    initMobileControls();
+    draw(); // Draw initial empty grid
 }
 
 function startGame() {
     grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-    score = 0;
-    level = 1;
-    lines = 0;
+    score = 0; level = 1; lines = 0;
     dropInterval = 1000;
-    gameOver = false;
-    paused = false;
-    gameStarted = true;
+    gameOver = false; paused = false; gameStarted = true;
 
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('gameOverScreen').classList.add('hidden');
@@ -143,58 +92,40 @@ function startGame() {
 
     playerReset();
     updateStats();
-    
-    if (!isBGMMuted) bgm.play();
-    
     requestAnimationFrame(update);
-}
-
-function resumeGame() {
-    paused = false;
-    document.getElementById('pauseScreen').classList.add('hidden');
-    if (!isBGMMuted) bgm.play();
 }
 
 function playerReset() {
     const types = 'IJLOSTZ';
-    if (!player.next) {
-        player.type = types[Math.floor(Math.random() * types.length)];
-        player.shape = SHAPES[player.type];
-    } else {
-        player.type = player.next;
-        player.shape = SHAPES[player.type];
-    }
-    
+    player.type = player.next || types[Math.floor(Math.random() * types.length)];
     player.next = types[Math.floor(Math.random() * types.length)];
+    
+    // Deep copy the shape to avoid mutating SHAPES constant
+    player.shape = SHAPES[player.type].map(row => [...row]);
+    
     player.pos.y = 0;
     player.pos.x = Math.floor(COLS / 2) - Math.floor(player.shape[0].length / 2);
 
     if (collide(grid, player)) {
-        endGame();
+        gameOver = true;
+        gameStarted = false;
+        document.getElementById('finalScore').textContent = score;
+        document.getElementById('gameOverScreen').classList.remove('hidden');
     }
-    
     drawNext();
 }
 
-function endGame() {
-    gameOver = true;
-    gameStarted = false;
-    bgm.pause();
-    bgm.currentTime = 0;
-    document.getElementById('finalScore').textContent = score;
-    document.getElementById('finalLevel').textContent = level;
-    document.getElementById('finalLines').textContent = lines;
-    document.getElementById('gameOverScreen').classList.remove('hidden');
-}
-
-// --- Logic ---
 function collide(grid, player) {
     const [m, o] = [player.shape, player.pos];
     for (let y = 0; y < m.length; ++y) {
         for (let x = 0; x < m[y].length; ++x) {
-            if (m[y][x] !== 0 &&
-               (grid[y + o.y] && grid[y + o.y][x + o.x]) !== 0) {
-                return true;
+            if (m[y][x] !== 0) {
+                const gridY = y + o.y;
+                const gridX = x + o.x;
+                // Wall and Floor collision
+                if (gridX < 0 || gridX >= COLS || gridY >= ROWS) return true;
+                // Pieces collision (only if gridY is within bounds)
+                if (gridY >= 0 && grid[gridY][gridX] !== 0) return true;
             }
         }
     }
@@ -205,29 +136,40 @@ function merge(grid, player) {
     player.shape.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
-                grid[y + player.pos.y][x + player.pos.x] = player.type;
+                const targetY = y + player.pos.y;
+                if (targetY >= 0) grid[targetY][x + player.pos.x] = player.type;
             }
         });
     });
 }
 
-function rotate(matrix, dir) {
+function rotateMatrix(matrix) {
+    // Transpose and reverse rows for 90deg rotation
     for (let y = 0; y < matrix.length; ++y) {
         for (let x = 0; x < y; ++x) {
-            [
-                matrix[x][y],
-                matrix[y][x],
-            ] = [
-                matrix[y][x],
-                matrix[x][y],
-            ];
+            [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
         }
     }
-    if (dir > 0) {
-        matrix.forEach(row => row.reverse());
-    } else {
-        matrix.reverse();
+    matrix.forEach(row => row.reverse());
+}
+
+function playerRotate() {
+    const pos = player.pos.x;
+    let offset = 1;
+    const oldShape = player.shape.map(row => [...row]);
+    rotateMatrix(player.shape);
+    
+    // Wall kick
+    while (collide(grid, player)) {
+        player.pos.x += offset;
+        offset = -(offset + (offset > 0 ? 1 : -1));
+        if (offset > player.shape[0].length) {
+            player.shape = oldShape;
+            player.pos.x = pos;
+            return;
+        }
     }
+    playSound('rotate');
 }
 
 function playerDrop() {
@@ -243,9 +185,10 @@ function playerDrop() {
 }
 
 function playerHardDrop() {
+    if (!gameStarted || paused || gameOver) return;
     while (!collide(grid, player)) {
         player.pos.y++;
-        score += 2; // Extra points for hard drop
+        score += 2;
     }
     player.pos.y--;
     merge(grid, player);
@@ -255,52 +198,22 @@ function playerHardDrop() {
     playSound('drop');
 }
 
-function playerMove(dir) {
-    player.pos.x += dir;
-    if (collide(grid, player)) {
-        player.pos.x -= dir;
-    } else {
-        playSound('move');
-    }
-}
-
-function playerRotate(dir) {
-    const pos = player.pos.x;
-    let offset = 1;
-    rotate(player.shape, dir);
-    while (collide(grid, player)) {
-        player.pos.x += offset;
-        offset = -(offset + (offset > 0 ? 1 : -1));
-        if (offset > player.shape[0].length) {
-            rotate(player.shape, -dir);
-            player.pos.x = pos;
-            return;
-        }
-    }
-    playSound('rotate');
-}
-
 function gridSweep() {
     let rowCount = 1;
-    outer: for (let y = ROWS - 1; y > 0; --y) {
-        for (let x = 0; x < COLS; ++x) {
-            if (grid[y][x] === 0) {
-                continue outer;
+    for (let y = ROWS - 1; y >= 0; --y) {
+        if (grid[y].every(value => value !== 0)) {
+            const row = grid.splice(y, 1)[0].fill(0);
+            grid.unshift(row);
+            y++;
+            score += rowCount * 100;
+            rowCount *= 2;
+            lines++;
+            if (lines % 10 === 0) {
+                level++;
+                dropInterval = Math.max(100, 1000 - (level - 1) * 100);
             }
+            playSound('clear');
         }
-        const row = grid.splice(y, 1)[0].fill(0);
-        grid.unshift(row);
-        ++y;
-
-        score += rowCount * 100;
-        rowCount *= 2;
-        lines++;
-        
-        if (lines % 10 === 0) {
-            level++;
-            dropInterval = Math.max(100, 1000 - (level - 1) * 100);
-        }
-        playSound('clear');
     }
 }
 
@@ -311,65 +224,33 @@ function updateStats() {
 }
 
 function handleKeyPress(e) {
-    if (!gameStarted || gameOver) return;
-
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-
-    if (e.code === 'KeyP') { // P
-        paused = !paused;
-        if (paused) {
-            document.getElementById('pauseScreen').classList.remove('hidden');
-            bgm.pause();
-        } else {
-            resumeGame();
-        }
+    if (!gameStarted || gameOver) {
+        if (e.code === 'Enter') startGame();
+        return;
     }
-
+    if (e.code === 'KeyP') paused = !paused;
     if (paused) return;
 
-    if (e.code === 'ArrowLeft') { // Left
-        playerMove(-1);
-    } else if (e.code === 'ArrowRight') { // Right
-        playerMove(1);
-    } else if (e.code === 'ArrowDown') { // Down
-        playerDrop();
-    } else if (e.code === 'ArrowUp') { // Up
-        playerRotate(1);
-    } else if (e.code === 'Space') { // Space
-        playerHardDrop();
-    }
+    if (e.code === 'ArrowLeft') player.pos.x--, collide(grid, player) && player.pos.x++, playSound('move');
+    if (e.code === 'ArrowRight') player.pos.x++, collide(grid, player) && player.pos.x--, playSound('move');
+    if (e.code === 'ArrowDown') playerDrop();
+    if (e.code === 'ArrowUp') playerRotate();
+    if (e.code === 'Space') playerHardDrop();
 }
 
 // --- Drawing ---
 function draw() {
-    if (!ctx) return;
-
-    // Clear Canvas
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Grid (Subtle)
+    // Draw grid lines
     ctx.strokeStyle = 'rgba(0, 242, 255, 0.1)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x <= COLS; x++) {
-        ctx.beginPath();
-        ctx.moveTo(x * BLOCK_SIZE, 0);
-        ctx.lineTo(x * BLOCK_SIZE, canvas.height);
-        ctx.stroke();
-    }
-    for (let y = 0; y <= ROWS; y++) {
-        ctx.beginPath();
-        ctx.moveTo(0, y * BLOCK_SIZE);
-        ctx.lineTo(canvas.width, y * BLOCK_SIZE);
-        ctx.stroke();
-    }
+    for(let x=0; x<=COLS; x++) { ctx.beginPath(); ctx.moveTo(x*BLOCK_SIZE,0); ctx.lineTo(x*BLOCK_SIZE,canvas.height); ctx.stroke(); }
+    for(let y=0; y<=ROWS; y++) { ctx.beginPath(); ctx.moveTo(0,y*BLOCK_SIZE); ctx.lineTo(canvas.width,y*BLOCK_SIZE); ctx.stroke(); }
 
     drawMatrix(grid, { x: 0, y: 0 });
-    
     if (gameStarted && player.shape) {
-        // Draw Ghost Piece first
         drawGhost();
-        // Draw Active Piece
         drawMatrix(player.shape, player.pos, player.type);
     }
 }
@@ -378,26 +259,17 @@ function drawMatrix(matrix, offset, forcedType = null) {
     matrix.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
-                // If it's the active piece (value is 1), use forcedType. 
-                // If it's the grid (value is 'I', 'J', etc.), use value.
                 const type = forcedType || value;
                 const char = EMOJIS[type] || '🧱';
                 const color = COLORS[type] || '#fff';
-                
                 ctx.save();
-                ctx.font = `${BLOCK_SIZE - 4}px "Exo 2"`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                // Neon glow
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = color;
                 ctx.fillStyle = color;
-                
-                const drawX = (x + offset.x) * BLOCK_SIZE + BLOCK_SIZE / 2;
-                const drawY = (y + offset.y) * BLOCK_SIZE + BLOCK_SIZE / 2;
-                
-                ctx.fillText(char, drawX, drawY);
+                ctx.font = `${BLOCK_SIZE - 4}px "Exo 2", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(char, (x + offset.x)*BLOCK_SIZE + BLOCK_SIZE/2, (y + offset.y)*BLOCK_SIZE + BLOCK_SIZE/2);
                 ctx.restore();
             }
         });
@@ -405,53 +277,28 @@ function drawMatrix(matrix, offset, forcedType = null) {
 }
 
 function drawGhost() {
-    if (!player.shape) return;
-    
-    const ghost = {
-        pos: { x: player.pos.x, y: player.pos.y },
-        shape: player.shape
-    };
-    
-    while (!collide(grid, ghost)) {
-        ghost.pos.y++;
-    }
+    const ghost = { pos: { x: player.pos.x, y: player.pos.y }, shape: player.shape };
+    while (!collide(grid, ghost)) ghost.pos.y++;
     ghost.pos.y--;
-    
     ctx.save();
-    ctx.globalAlpha = 0.2;
+    ctx.globalAlpha = 0.15;
     drawMatrix(ghost.shape, ghost.pos, player.type);
     ctx.restore();
 }
 
 function drawNext() {
-    if (!nextCtx) return;
     nextCtx.fillStyle = '#000';
     nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-    
     if (player.next) {
         const shape = SHAPES[player.next];
-        const char = EMOJIS[player.next];
-        const color = COLORS[player.next] || '#fff';
-        
-        const blockSize = 20; // Smaller for next preview
-        const offset = {
-            x: (nextCanvas.width / blockSize - shape[0].length) / 2,
-            y: (nextCanvas.height / blockSize - shape.length) / 2
-        };
-        
+        const bSize = 20;
+        const offX = (nextCanvas.width - shape[0].length * bSize) / 2;
+        const offY = (nextCanvas.height - shape.length * bSize) / 2;
         shape.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value !== 0) {
-                    nextCtx.save();
-                    nextCtx.font = `${blockSize - 2}px "Exo 2"`;
-                    nextCtx.textAlign = 'center';
-                    nextCtx.textBaseline = 'middle';
-                    nextCtx.shadowBlur = 5;
-                    nextCtx.shadowColor = color;
-                    nextCtx.fillStyle = color;
-                    
-                    nextCtx.fillText(char, (x + offset.x) * blockSize + blockSize/2, (y + offset.y) * blockSize + blockSize/2);
-                    nextCtx.restore();
+                    nextCtx.font = `${bSize-2}px sans-serif`;
+                    nextCtx.fillText(EMOJIS[player.next], offX + x*bSize + bSize/2, offY + y*bSize + bSize/2);
                 }
             });
         });
@@ -459,58 +306,37 @@ function drawNext() {
 }
 
 function update(time = 0) {
-    if (!gameStarted || paused || gameOver) return;
-
-    const deltaTime = time - lastTime;
-    lastTime = time;
-
-    dropCounter += deltaTime;
-    if (dropCounter > dropInterval) {
-        playerDrop();
+    if (gameStarted && !paused && !gameOver) {
+        const deltaTime = time - lastTime;
+        lastTime = time;
+        dropCounter += deltaTime;
+        if (dropCounter > dropInterval) playerDrop();
+        draw();
     }
-
-    draw();
     requestAnimationFrame(update);
 }
 
 // --- Mobile Controls ---
 function initMobileControls() {
-    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-    
-    // Always show if it's a touch device
-    if (isTouchDevice) {
-        const controls = document.getElementById('mobileControls');
-        if (controls) {
-            controls.classList.remove('hidden');
-            controls.style.display = 'flex'; // Force display flex to override any CSS issues
-        }
-    } else {
-        return;
-    }
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (!isTouch) return;
 
-    const handleBtn = (id, action) => {
-        const btn = document.getElementById(id);
-        if (!btn) return;
-        btn.addEventListener('touchstart', (e) => {
+    const controls = document.getElementById('mobileControls');
+    if (controls) controls.classList.remove('hidden');
+
+    const bind = (id, fn) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            if (!gameStarted || paused || gameOver) return;
-            action();
+            if (gameStarted && !paused && !gameOver) fn();
         }, { passive: false });
-        
-        // Add click listener for testing on desktop with mouse if needed
-        btn.addEventListener('click', (e) => {
-             e.preventDefault();
-             if (!gameStarted || paused || gameOver) return;
-             action();
-        });
     };
 
-    handleBtn('moveLeftBtn', () => playerMove(-1));
-    handleBtn('moveRightBtn', () => playerMove(1));
-    handleBtn('rotateBtn', () => playerRotate(1));
-    handleBtn('hardDropBtn', () => playerHardDrop());
+    bind('moveLeftBtn', () => { player.pos.x--; if(collide(grid, player)) player.pos.x++; playSound('move'); });
+    bind('moveRightBtn', () => { player.pos.x++; if(collide(grid, player)) player.pos.x--; playSound('move'); });
+    bind('rotateBtn', playerRotate);
+    bind('hardDropBtn', playerHardDrop);
 }
 
-// --- Start ---
 init();
-initMobileControls();
