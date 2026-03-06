@@ -67,14 +67,11 @@ function togglePause() {
     if (!gameStarted || gameOver) return;
     paused = !paused;
     const pauseScreen = document.getElementById('pauseScreen');
-    const mobPauseBtn = document.getElementById('mobilePauseBtn');
     
     if (paused) {
         pauseScreen.classList.remove('hidden');
-        if (mobPauseBtn) mobPauseBtn.textContent = 'RESUME';
     } else {
         pauseScreen.classList.add('hidden');
-        if (mobPauseBtn) mobPauseBtn.textContent = 'PAUSE';
     }
 }
 
@@ -89,8 +86,8 @@ function init() {
     document.getElementById('restartBtn').addEventListener('click', startGame);
     document.getElementById('resumeBtn').addEventListener('click', togglePause);
     
-    const mobPause = document.getElementById('mobilePauseBtn');
-    if (mobPause) mobPause.addEventListener('click', togglePause);
+    // Toggle pause on canvas click
+    canvas.addEventListener('click', togglePause);
 
     document.getElementById('bgmBtn').addEventListener('click', () => {
         // Simple toggle for placeholder BGM
