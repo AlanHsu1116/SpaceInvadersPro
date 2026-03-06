@@ -196,31 +196,28 @@ body {
 /* Mobile Controls */
 #mobileControls {
     display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(17, 17, 28, 0.95); /* Slightly transparent */
-    padding: 10px 10px 20px; /* Reduced from 20px 15px 40px */
+    background: rgba(17, 17, 28, 0.95);
+    padding: 10px 10px 30px; /* Added more bottom padding for safe area */
     justify-content: space-between;
     align-items: center;
     z-index: 1000;
     border-top: 2px solid #222;
+    width: 100%;
 }
 
 .m-group-left, .m-group-right {
     display: flex;
-    gap: 10px; /* Reduced from 15px */
+    gap: 10px;
 }
 
 #mobileControls button {
-    width: 60px; /* Reduced from 70px */
-    height: 60px; /* Reduced from 70px */
+    width: 55px; /* Slightly smaller to fit more screens */
+    height: 55px;
     background: #222;
     border: 2px solid var(--neon-blue);
     color: var(--neon-blue);
     border-radius: 50%;
-    font-size: 0.9rem; /* Reduced from 1.5rem */
+    font-size: 0.8rem;
     font-weight: bold;
     font-family: 'Exo 2', sans-serif;
     cursor: pointer;
@@ -248,25 +245,42 @@ body {
         height: 100vh;
         max-height: 100vh;
         border: none;
+        display: flex;
+        flex-direction: column;
     }
 
     #gameLayout {
+        flex: 1; /* Take up available space */
         flex-direction: row;
         justify-content: center;
-        padding: 5px 2px 100px; /* Reduced padding-bottom to match lower buttons */
+        padding: 5px 2px; /* Removed large padding-bottom */
         gap: 5px;
+        overflow: hidden;
     }
 
     #canvasContainer {
         flex: 1;
-        max-width: 65%;
+        max-width: 60%;
+        display: flex;
+        align-items: center;
     }
 
     #gameCanvas {
         width: 100%;
         height: auto;
-        max-height: 70vh; /* Allow slightly more vertical space */
+        max-height: 55vh; /* Reduced to ensure it fits above controls */
+        object-fit: contain;
     }
+
+    .side-panel {
+        width: 60px;
+        gap: 5px;
+    }
+
+    #mobileControls {
+        display: flex; /* Part of the flex column now */
+    }
+}
 
     .side-panel {
         width: 70px;
