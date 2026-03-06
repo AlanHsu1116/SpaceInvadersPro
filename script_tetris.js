@@ -451,9 +451,6 @@ function initMobileControls() {
     const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     if (!isTouchDevice) return;
 
-    // Mobile specific layout adjustments could be handled here if needed via JS
-    // but CSS handles most of it. We just ensure listeners are active.
-
     const handleBtn = (id, action) => {
         const btn = document.getElementById(id);
         if (!btn) return;
@@ -464,12 +461,12 @@ function initMobileControls() {
         }, { passive: false });
     };
 
-    handleBtn('mLeftBtn', () => playerMove(-1));
-    handleBtn('mRightBtn', () => playerMove(1));
-    handleBtn('mDownBtn', () => playerDrop());
-    handleBtn('mUpBtn', () => playerRotate(1));
-    handleBtn('mRotateBtn', () => playerRotate(1)); 
-    handleBtn('mHardDropBtn', () => playerHardDrop());
+    handleBtn('moveLeftBtn', () => playerMove(-1));
+    handleBtn('moveRightBtn', () => playerMove(1));
+    handleBtn('rotateBtn', () => playerRotate(1));
+    handleBtn('hardDropBtn', () => playerHardDrop());
+    
+    // Support for holding down the move buttons for faster movement can be added later
 }
 
 // --- Start ---

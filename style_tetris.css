@@ -215,89 +215,62 @@ body {
     font-weight: bold;
 }
 
-/* Mobile Controls Integrated in Side Panels */
-.mobile-controls-side {
+/* Mobile Controls (Space Invaders Style) */
+#mobileControls {
     display: none; /* Hidden on desktop */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #1a1a2e;
+    padding: 15px 10px 30px; /* Extra bottom padding for safe area */
+    justify-content: space-around;
+    align-items: stretch;
+    gap: 10px;
+    z-index: 1000;
+    border-top: 2px solid var(--neon-blue);
 }
 
-/* D-Pad Style (Left Side) */
-.d-pad {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.d-pad-horizontal {
-    display: flex;
-    gap: 2px;
-}
-
-.d-btn {
-    width: 45px;
-    height: 45px;
-    background: #111;
-    border: 2px solid #222;
-    color: #444;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    touch-action: manipulation;
-}
-
-.d-btn:active {
-    background: #222;
+#mobileControls button {
+    flex: 1;
+    height: 70px;
+    background: transparent;
+    border: 2px solid var(--neon-blue);
     color: var(--neon-blue);
-    box-shadow: 0 0 10px var(--neon-blue);
+    font-size: 1.5rem;
+    font-weight: bold;
+    font-family: 'Exo 2', sans-serif;
+    cursor: pointer;
 }
 
-.up { border-radius: 8px 8px 0 0; }
-.down { border-radius: 0 0 8px 8px; }
-.left { border-radius: 8px 0 0 8px; }
-.right { border-radius: 0 8px 8px 0; }
+#mobileControls button:active {
+    background: var(--neon-blue);
+    color: #000;
+}
 
-/* Action Buttons (Right Side) */
-.action-buttons-vertical {
+.control-center {
+    flex: 1.5;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    align-items: center;
+    gap: 5px;
 }
 
-.a-btn {
-    width: 60px;
-    height: 60px;
-    background: #a00; /* Red buttons */
-    border: 3px solid #800;
-    border-radius: 50%;
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: bold;
-    box-shadow: 3px 3px 0 #600;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    touch-action: manipulation;
+.control-center button {
+    height: auto !important;
+    padding: 10px 0;
+    font-size: 1.1rem !important;
 }
 
-.a-btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 #400;
-    background: #c00;
+#rotateBtn {
+    background: rgba(191, 0, 255, 0.1) !important;
+    border-color: var(--neon-purple) !important;
+    color: var(--neon-purple) !important;
 }
 
-.b-btn {
-    background: #800;
-    border-color: #600;
-}
-
-.btn-label {
-    color: #888;
-    font-size: 0.6rem;
-    font-weight: bold;
-    text-transform: uppercase;
+#hardDropBtn {
+    background: rgba(255, 0, 255, 0.1) !important;
+    border-color: var(--neon-pink) !important;
+    color: var(--neon-pink) !important;
 }
 
 /* Adjust Layout for Mobile */
@@ -309,20 +282,14 @@ body {
     }
 
     #gameLayout {
-        flex-direction: row; /* Keep side panels next to canvas */
-        justify-content: space-between;
-        padding: 10px 5px;
-        gap: 5px;
-    }
-
-    .side-panel {
-        width: 100px; /* Wider for buttons */
+        flex-direction: row;
         justify-content: center;
+        padding: 10px 5px 120px; /* Leave space for bottom bar */
         gap: 10px;
     }
 
-    .mobile-controls-side {
-        display: block;
+    #mobileControls {
+        display: flex;
     }
 
     .mobile-hide {
@@ -330,9 +297,7 @@ body {
     }
 
     #canvasContainer {
-        flex: 1;
-        max-width: calc(100vw - 210px);
-        border-width: 2px;
+        max-width: 60%;
     }
 
     #gameCanvas {
@@ -340,15 +305,23 @@ body {
         height: auto;
     }
 
+    .side-panel {
+        width: 60px;
+        gap: 5px;
+    }
+
     .stat-box {
-        width: 100%;
-        padding: 5px;
+        padding: 2px;
+    }
+
+    .stat-box #scoreDisplay, 
+    .stat-box #levelDisplay {
+        font-size: 0.9rem;
     }
 
     #nextCanvas {
         width: 100%;
         height: auto;
-        max-width: 80px;
     }
 }
 
