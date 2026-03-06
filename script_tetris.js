@@ -348,16 +348,35 @@ function drawMatrix(matrix, offset, forcedType = null) {
         row.forEach((value, x) => {
             if (value !== 0) {
                 const type = forcedType || value;
-                const char = EMOJIS[type] || '🧱';
-                const color = COLORS[type] || '#fff';
+                const baseColor = COLORS[type] || '#fff';
+                const drawX = (x + offset.x) * BLOCK_SIZE;
+                const drawY = (y + offset.y) * BLOCK_SIZE;
+                
                 ctx.save();
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = color;
-                ctx.fillStyle = color;
-                ctx.font = `${BLOCK_SIZE - 4}px "Exo 2", sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(char, (x + offset.x)*BLOCK_SIZE + BLOCK_SIZE/2, (y + offset.y)*BLOCK_SIZE + BLOCK_SIZE/2);
+                
+                // 1. Neon Shadow Glow
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = baseColor;
+                
+                // 2. Metallic Gradient Background
+                const gradient = ctx.createLinearGradient(drawX, drawY, drawX + BLOCK_SIZE, drawY + BLOCK_SIZE);
+                gradient.addColorStop(0, '#fff'); // Light highlight
+                gradient.addColorStop(0.2, baseColor);
+                gradient.addColorStop(0.5, baseColor);
+                gradient.addColorStop(0.8, '#000'); // Shadow
+                gradient.addColorStop(1, baseColor);
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(drawX + 1, drawY + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+                
+                // 3. Bevel Effect (Inner Border)
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.strokeRect(drawX + 2, drawY + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
+                
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.strokeRect(drawX + 4, drawY + 4, BLOCK_SIZE - 8, BLOCK_SIZE - 8);
+
                 ctx.restore();
             }
         });
