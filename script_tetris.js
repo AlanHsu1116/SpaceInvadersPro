@@ -61,6 +61,21 @@ function playSound(type) {
     osc.stop(now + 0.1);
 }
 
+function togglePause() {
+    if (!gameStarted || gameOver) return;
+    paused = !paused;
+    const pauseScreen = document.getElementById('pauseScreen');
+    const mobPauseBtn = document.getElementById('mobilePauseBtn');
+    
+    if (paused) {
+        pauseScreen.classList.remove('hidden');
+        if (mobPauseBtn) mobPauseBtn.textContent = 'RESUME';
+    } else {
+        pauseScreen.classList.add('hidden');
+        if (mobPauseBtn) mobPauseBtn.textContent = 'PAUSE';
+    }
+}
+
 // --- Initialization ---
 function init() {
     canvas = document.getElementById('gameCanvas');
@@ -70,9 +85,16 @@ function init() {
 
     document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('restartBtn').addEventListener('click', startGame);
-    document.getElementById('resumeBtn').addEventListener('click', () => {
-        paused = false;
-        document.getElementById('pauseScreen').classList.add('hidden');
+    document.getElementById('resumeBtn').addEventListener('click', togglePause);
+    
+    const mobPause = document.getElementById('mobilePauseBtn');
+    if (mobPause) mobPause.addEventListener('click', togglePause);
+
+    document.getElementById('bgmBtn').addEventListener('click', () => {
+        // Simple toggle for placeholder BGM
+        const btn = document.getElementById('bgmBtn');
+        isBGMMuted = !isBGMMuted;
+        btn.textContent = isBGMMuted ? "🔇 音樂: 關" : "🎵 音樂: 開";
     });
 
     document.addEventListener('keydown', handleKeyPress);
@@ -291,18 +313,27 @@ function drawGhost() {
 }
 
 function drawNext() {
+    if (!nextCtx) return;
     nextCtx.fillStyle = '#000';
     nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
     if (player.next) {
         const shape = SHAPES[player.next];
-        const bSize = 20;
+        const bSize = 14; // Smaller preview size
         const offX = (nextCanvas.width - shape[0].length * bSize) / 2;
         const offY = (nextCanvas.height - shape.length * bSize) / 2;
         shape.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value !== 0) {
+                    nextCtx.save();
+                    const color = COLORS[player.next] || '#fff';
                     nextCtx.font = `${bSize-2}px sans-serif`;
+                    nextCtx.textAlign = 'center';
+                    nextCtx.textBaseline = 'middle';
+                    nextCtx.shadowBlur = 5;
+                    nextCtx.shadowColor = color;
+                    nextCtx.fillStyle = color;
                     nextCtx.fillText(EMOJIS[player.next], offX + x*bSize + bSize/2, offY + y*bSize + bSize/2);
+                    nextCtx.restore();
                 }
             });
         });
@@ -316,6 +347,9 @@ function update(time = 0) {
         dropCounter += deltaTime;
         if (dropCounter > dropInterval) playerDrop();
         draw();
+    } else {
+        // Still need to draw if paused to show pause screen overlay or stationary grid
+        draw();
     }
     requestAnimationFrame(update);
 }
@@ -323,10 +357,14 @@ function update(time = 0) {
 // --- Mobile Controls ---
 function initMobileControls() {
     const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-    if (!isTouch) return;
-
+    
+    // Always show controls on touch devices
     const controls = document.getElementById('mobileControls');
-    if (controls) controls.classList.remove('hidden');
+    if (isTouch && controls) {
+        controls.classList.remove('hidden');
+    } else if (!isTouch) {
+        return;
+    }
 
     const bind = (id, fn) => {
         const el = document.getElementById(id);

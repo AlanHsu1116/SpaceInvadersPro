@@ -215,66 +215,78 @@ body {
     font-weight: bold;
 }
 
-/* Mobile Controls (Space Invaders Style) */
+/* Mobile Controls (Ergonomic Console Style) */
 #mobileControls {
     display: none; /* Hidden on desktop */
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #1a1a2e;
-    padding: 15px 10px 30px; /* Extra bottom padding for safe area */
-    justify-content: space-around;
-    align-items: stretch;
-    gap: 10px;
+    background: #111;
+    padding: 20px 15px 40px;
+    justify-content: space-between;
+    align-items: center;
     z-index: 1000;
-    border-top: 2px solid var(--neon-blue);
+    border-top: 3px solid #222;
+}
+
+.m-group-left, .m-group-right {
+    display: flex;
+    gap: 15px;
 }
 
 #mobileControls button {
-    flex: 1;
-    height: 70px;
-    background: transparent;
-    border: 2px solid var(--neon-blue);
+    width: 75px;
+    height: 75px;
+    background: #222;
+    border: 3px solid var(--neon-blue);
     color: var(--neon-blue);
-    font-size: 1.5rem;
+    border-radius: 50%;
+    font-size: 1.8rem;
     font-weight: bold;
     font-family: 'Exo 2', sans-serif;
     cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    touch-action: manipulation;
 }
 
 #mobileControls button:active {
     background: var(--neon-blue);
     color: #000;
+    transform: scale(0.95);
 }
 
-.control-center {
-    flex: 1.5;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.control-center button {
-    height: auto !important;
-    padding: 10px 0;
-    font-size: 1.1rem !important;
-}
-
+/* Specific Action Colors */
 #rotateBtn {
-    background: rgba(191, 0, 255, 0.1) !important;
     border-color: var(--neon-purple) !important;
     color: var(--neon-purple) !important;
+    font-size: 1rem !important;
 }
 
 #hardDropBtn {
-    background: rgba(255, 0, 255, 0.1) !important;
     border-color: var(--neon-pink) !important;
     color: var(--neon-pink) !important;
+    font-size: 1rem !important;
 }
 
-/* Adjust Layout for Mobile */
+/* Header Buttons */
+.top-right-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.mobile-only {
+    display: none;
+}
+
 @media (max-width: 768px) {
+    .mobile-only {
+        display: block;
+    }
+
     #gameWrapper {
         height: 100vh;
         max-height: 100vh;
@@ -284,8 +296,8 @@ body {
     #gameLayout {
         flex-direction: row;
         justify-content: center;
-        padding: 10px 5px 120px; /* Leave space for bottom bar */
-        gap: 10px;
+        padding: 10px 5px 150px; /* Space for dual-side controls */
+        gap: 5px;
     }
 
     #mobileControls {
@@ -297,31 +309,37 @@ body {
     }
 
     #canvasContainer {
-        max-width: 60%;
-    }
-
-    #gameCanvas {
-        width: 100%;
-        height: auto;
+        max-width: 55%;
     }
 
     .side-panel {
-        width: 60px;
-        gap: 5px;
+        width: 80px;
+        gap: 10px;
     }
 
     .stat-box {
-        padding: 2px;
+        padding: 5px;
+        width: 100%;
+    }
+
+    /* Shrink NEXT box */
+    .next-box {
+        padding: 5px;
+        border-left: 2px solid var(--neon-purple);
+    }
+
+    #nextCanvas {
+        width: 60px;
+        height: 60px;
+    }
+
+    .stat-box .label {
+        font-size: 0.6rem;
     }
 
     .stat-box #scoreDisplay, 
     .stat-box #levelDisplay {
         font-size: 0.9rem;
-    }
-
-    #nextCanvas {
-        width: 100%;
-        height: auto;
     }
 }
 
