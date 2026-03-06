@@ -215,40 +215,31 @@ body {
     font-weight: bold;
 }
 
-/* GameBoy Style Console Controller */
-#gameConsole {
-    background: #333; /* Solid plastic gray */
-    border-top: 5px solid #222;
-    padding: 30px 20px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    position: relative;
-    z-index: 1000;
-    box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
+/* Mobile Controls Integrated in Side Panels */
+.mobile-controls-side {
+    display: none; /* Hidden on desktop */
 }
 
-/* D-Pad Style */
+/* D-Pad Style (Left Side) */
 .d-pad {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 2px;
 }
 
 .d-pad-horizontal {
     display: flex;
-    align-items: center;
+    gap: 2px;
 }
 
 .d-btn {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     background: #111;
-    border: none;
+    border: 2px solid #222;
     color: #444;
-    font-size: 1.5rem;
-    box-shadow: inset 0 0 5px #000;
+    font-size: 1.2rem;
     cursor: pointer;
     display: flex;
     justify-content: center;
@@ -262,41 +253,29 @@ body {
     box-shadow: 0 0 10px var(--neon-blue);
 }
 
-.d-pad-center {
-    width: 50px;
-    height: 50px;
-    background: #111;
-}
-
 .up { border-radius: 8px 8px 0 0; }
 .down { border-radius: 0 0 8px 8px; }
 .left { border-radius: 8px 0 0 8px; }
 .right { border-radius: 0 8px 8px 0; }
 
-/* Action Buttons (A/B) */
-.action-buttons {
-    display: flex;
-    gap: 20px;
-    transform: rotate(-15deg); /* Classic tilted layout */
-}
-
-.btn-label-group {
+/* Action Buttons (Right Side) */
+.action-buttons-vertical {
     display: flex;
     flex-direction: column;
+    gap: 15px;
     align-items: center;
-    gap: 5px;
 }
 
 .a-btn {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
     background: #a00; /* Red buttons */
-    border: 4px solid #800;
+    border: 3px solid #800;
     border-radius: 50%;
-    color: rgba(255,255,255,0.3);
-    font-size: 1.5rem;
+    color: #fff;
+    font-size: 1.2rem;
     font-weight: bold;
-    box-shadow: 4px 4px 0 #600;
+    box-shadow: 3px 3px 0 #600;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -305,7 +284,7 @@ body {
 
 .a-btn:active {
     transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 #400;
+    box-shadow: 1px 1px 0 #400;
     background: #c00;
 }
 
@@ -316,10 +295,9 @@ body {
 
 .btn-label {
     color: #888;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     font-weight: bold;
     text-transform: uppercase;
-    transform: rotate(15deg);
 }
 
 /* Adjust Layout for Mobile */
@@ -328,45 +306,49 @@ body {
         height: 100vh;
         max-height: 100vh;
         border: none;
-        overflow: hidden;
     }
 
     #gameLayout {
-        flex: 1;
-        padding: 5px;
+        flex-direction: row; /* Keep side panels next to canvas */
+        justify-content: space-between;
+        padding: 10px 5px;
         gap: 5px;
-        overflow: hidden;
+    }
+
+    .side-panel {
+        width: 100px; /* Wider for buttons */
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .mobile-controls-side {
+        display: block;
+    }
+
+    .mobile-hide {
+        display: none !important;
     }
 
     #canvasContainer {
+        flex: 1;
+        max-width: calc(100vw - 210px);
         border-width: 2px;
-        max-width: 80%;
     }
 
     #gameCanvas {
         width: 100%;
         height: auto;
-        max-height: 55vh; /* Limit screen height to fit controller */
-    }
-
-    .side-panel {
-        width: 80px;
-        gap: 5px;
     }
 
     .stat-box {
+        width: 100%;
         padding: 5px;
     }
 
-    .stat-box #scoreDisplay, 
-    .stat-box #levelDisplay, 
-    .stat-box #linesDisplay {
-        font-size: 1.1rem;
-    }
-
     #nextCanvas {
-        width: 60px;
-        height: 60px;
+        width: 100%;
+        height: auto;
+        max-width: 80px;
     }
 }
 

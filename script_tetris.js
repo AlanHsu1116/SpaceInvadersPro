@@ -451,7 +451,8 @@ function initMobileControls() {
     const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     if (!isTouchDevice) return;
 
-    document.getElementById('gameConsole').classList.remove('hidden');
+    // Mobile specific layout adjustments could be handled here if needed via JS
+    // but CSS handles most of it. We just ensure listeners are active.
 
     const handleBtn = (id, action) => {
         const btn = document.getElementById(id);
@@ -460,15 +461,15 @@ function initMobileControls() {
             e.preventDefault();
             if (!gameStarted || paused || gameOver) return;
             action();
-        });
+        }, { passive: false });
     };
 
     handleBtn('mLeftBtn', () => playerMove(-1));
     handleBtn('mRightBtn', () => playerMove(1));
     handleBtn('mDownBtn', () => playerDrop());
     handleBtn('mUpBtn', () => playerRotate(1));
-    handleBtn('mRotateBtn', () => playerRotate(1)); // A Button
-    handleBtn('mHardDropBtn', () => playerHardDrop()); // B Button
+    handleBtn('mRotateBtn', () => playerRotate(1)); 
+    handleBtn('mHardDropBtn', () => playerHardDrop());
 }
 
 // --- Start ---

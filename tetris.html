@@ -16,19 +16,22 @@
         </div>
         
         <div id="gameLayout">
-            <!-- Left Side: Stats -->
+            <!-- Left Side: Stats & D-Pad -->
             <div id="sidePanelLeft" class="side-panel">
-                <div class="stat-box">
-                    <div class="label">SCORE</div>
-                    <div id="scoreDisplay">0</div>
-                </div>
-                <div class="stat-box">
+                <div class="stat-box mobile-hide">
                     <div class="label">LEVEL</div>
                     <div id="levelDisplay">1</div>
                 </div>
-                <div class="stat-box">
-                    <div class="label">LINES</div>
-                    <div id="linesDisplay">0</div>
+                
+                <div class="mobile-controls-side">
+                    <div class="d-pad">
+                        <button id="mUpBtn" class="d-btn up">▲</button>
+                        <div class="d-pad-horizontal">
+                            <button id="mLeftBtn" class="d-btn left">◀</button>
+                            <button id="mRightBtn" class="d-btn right">▶</button>
+                        </div>
+                        <button id="mDownBtn" class="d-btn down">▼</button>
+                    </div>
                 </div>
             </div>
 
@@ -37,19 +40,31 @@
                 <canvas id="gameCanvas" width="300" height="600"></canvas>
             </div>
 
-            <!-- Right Side: Next Piece -->
+            <!-- Right Side: Next Piece & Action Buttons -->
             <div id="sidePanelRight" class="side-panel">
                 <div class="stat-box">
                     <div class="label">NEXT</div>
                     <canvas id="nextCanvas" width="100" height="100"></canvas>
                 </div>
+
+                <div class="mobile-controls-side">
+                    <div class="action-buttons-vertical">
+                        <div class="btn-label-group">
+                            <button id="mRotateBtn" class="a-btn">A</button>
+                            <span class="btn-label">ROTATE</span>
+                        </div>
+                        <div class="btn-label-group">
+                            <button id="mHardDropBtn" class="a-btn b-btn">B</button>
+                            <span class="btn-label">DROP</span>
+                        </div>
+                    </div>
+                </div>
                 
-                <div id="controlsGuide">
+                <div id="controlsGuide" class="mobile-hide">
                     <div class="guide-item"><span>← →</span> 移動</div>
                     <div class="guide-item"><span>↑</span> 旋轉</div>
                     <div class="guide-item"><span>↓</span> 加速</div>
                     <div class="guide-item"><span>Space</span> 瞬間落下</div>
-                    <div class="guide-item"><span>P</span> 暫停</div>
                 </div>
             </div>
         </div>
@@ -74,30 +89,6 @@
         <div id="pauseScreen" class="overlay hidden">
             <h1 class="neon-text">PAUSED</h1>
             <button id="resumeBtn" class="play-btn">RESUME</button>
-        </div>
-
-        <!-- Game Console Bottom Controller -->
-        <div id="gameConsole" class="hidden">
-            <div class="d-pad">
-                <button id="mUpBtn" class="d-btn up">▲</button>
-                <div class="d-pad-horizontal">
-                    <button id="mLeftBtn" class="d-btn left">◀</button>
-                    <div class="d-pad-center"></div>
-                    <button id="mRightBtn" class="d-btn right">▶</button>
-                </div>
-                <button id="mDownBtn" class="d-btn down">▼</button>
-            </div>
-            
-            <div class="action-buttons">
-                <div class="btn-label-group">
-                    <button id="mHardDropBtn" class="a-btn b-btn">B</button>
-                    <span class="btn-label">DROP</span>
-                </div>
-                <div class="btn-label-group">
-                    <button id="mRotateBtn" class="a-btn">A</button>
-                    <span class="btn-label">ROTATE</span>
-                </div>
-            </div>
         </div>
 
         <!-- Scanline Effect -->
