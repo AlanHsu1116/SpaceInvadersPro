@@ -1,0 +1,258 @@
+:root {
+    --neon-blue: #00f2ff;
+    --neon-pink: #ff00ff;
+    --neon-purple: #bf00ff;
+    --neon-yellow: #ffff00;
+    --neon-red: #ff0000;
+    --bg-dark: #0a0a0c;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+}
+
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-dark);
+    color: #fff;
+    font-family: 'Exo 2', sans-serif;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#gameWrapper {
+    width: 100%;
+    max-width: 1000px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border: 2px solid var(--neon-blue);
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+    background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0c 100%);
+}
+
+/* Header */
+#top-controls {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+}
+
+.game-title-small {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px var(--neon-blue);
+    letter-spacing: 2px;
+}
+
+#backToMenuBtn, .control-btn {
+    background: transparent;
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    padding: 8px 15px;
+    cursor: pointer;
+    font-family: 'Exo 2', sans-serif;
+    transition: all 0.3s ease;
+}
+
+#backToMenuBtn:hover, .control-btn:hover {
+    background: var(--neon-blue);
+    color: #000;
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+/* Layout */
+#gameLayout {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    padding: 20px;
+}
+
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 150px;
+}
+
+#canvasContainer {
+    border: 4px solid var(--neon-blue);
+    box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
+    background: rgba(0, 0, 0, 0.8);
+    line-height: 0;
+}
+
+#gameCanvas {
+    display: block;
+}
+
+/* Stat Box */
+.stat-box {
+    background: var(--glass-bg);
+    border-left: 4px solid var(--neon-blue);
+    padding: 10px;
+    text-align: center;
+}
+
+.stat-box .label {
+    font-size: 0.8rem;
+    color: var(--neon-blue);
+    margin-bottom: 5px;
+    opacity: 0.8;
+}
+
+.stat-box #scoreDisplay, 
+.stat-box #levelDisplay, 
+.stat-box #linesDisplay {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#nextCanvas {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    margin-top: 5px;
+}
+
+/* Controls Guide */
+#controlsGuide {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.guide-item {
+    margin-bottom: 8px;
+}
+
+.guide-item span {
+    color: var(--neon-blue);
+    font-weight: bold;
+    display: inline-block;
+    width: 60px;
+}
+
+/* Overlays */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.neon-text {
+    font-size: 4rem;
+    color: #fff;
+    text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue), 0 0 40px var(--neon-blue);
+    margin-bottom: 10px;
+}
+
+.danger-text {
+    font-size: 4rem;
+    color: #fff;
+    text-shadow: 0 0 10px var(--neon-red), 0 0 20px var(--neon-red);
+    margin-bottom: 20px;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--neon-purple);
+    letter-spacing: 4px;
+    margin-bottom: 40px;
+}
+
+.play-btn {
+    background: transparent;
+    border: 2px solid var(--neon-blue);
+    color: var(--neon-blue);
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-family: 'Exo 2', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+}
+
+.play-btn:hover {
+    background: var(--neon-blue);
+    color: #000;
+    box-shadow: 0 0 30px var(--neon-blue);
+}
+
+.final-stats {
+    margin-bottom: 30px;
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.final-stats span {
+    color: var(--neon-blue);
+    font-weight: bold;
+}
+
+/* Scanline */
+.scanline {
+    width: 100%;
+    height: 100px;
+    z-index: 101;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 242, 255, 0.05) 50%, rgba(0, 0, 0, 0) 100%);
+    opacity: 0.1;
+    position: absolute;
+    bottom: 100%;
+    animation: scanline 8s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes scanline {
+    0% { bottom: 100%; }
+    80% { bottom: 100%; }
+    100% { bottom: -100px; }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    #gameLayout {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .side-panel {
+        flex-direction: row;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    #controlsGuide {
+        display: none;
+    }
+    
+    #gameCanvas {
+        max-height: 50vh;
+        width: auto;
+    }
+}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tetris PRO - Arcade Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_tetris.css">
+</head>
+<body>
+    <div id="gameWrapper">
+        <div id="top-controls">
+            <button id="backToMenuBtn" onclick="window.location.href='index.html'">← 主選單</button>
+            <div class="game-title-small">TETRIS PRO</div>
+            <button id="bgmBtn" class="control-btn">🔇 音樂: 關</button>
+        </div>
+        
+        <div id="gameLayout">
+            <!-- Left Side: Stats -->
+            <div id="sidePanelLeft" class="side-panel">
+                <div class="stat-box">
+                    <div class="label">SCORE</div>
+                    <div id="scoreDisplay">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">LEVEL</div>
+                    <div id="levelDisplay">1</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">LINES</div>
+                    <div id="linesDisplay">0</div>
+                </div>
+            </div>
+
+            <!-- Center: Game Canvas -->
+            <div id="canvasContainer">
+                <canvas id="gameCanvas" width="300" height="600"></canvas>
+            </div>
+
+            <!-- Right Side: Next Piece -->
+            <div id="sidePanelRight" class="side-panel">
+                <div class="stat-box">
+                    <div class="label">NEXT</div>
+                    <canvas id="nextCanvas" width="100" height="100"></canvas>
+                </div>
+                
+                <div id="controlsGuide">
+                    <div class="guide-item"><span>← →</span> 移動</div>
+                    <div class="guide-item"><span>↑</span> 旋轉</div>
+                    <div class="guide-item"><span>↓</span> 加速</div>
+                    <div class="guide-item"><span>Space</span> 瞬間落下</div>
+                    <div class="guide-item"><span>P</span> 暫停</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlays -->
+        <div id="startScreen" class="overlay">
+            <h1 class="neon-text">TETRIS PRO</h1>
+            <p class="subtitle">RETRO NEON EDITION</p>
+            <button id="startBtn" class="play-btn">START GAME</button>
+        </div>
+
+        <div id="gameOverScreen" class="overlay hidden">
+            <h1 class="danger-text">GAME OVER</h1>
+            <div class="final-stats">
+                <p>Score: <span id="finalScore">0</span></p>
+                <p>Level: <span id="finalLevel">1</span></p>
+                <p>Lines: <span id="finalLines">0</span></p>
+            </div>
+            <button id="restartBtn" class="play-btn">TRY AGAIN</button>
+        </div>
+
+        <div id="pauseScreen" class="overlay hidden">
+            <h1 class="neon-text">PAUSED</h1>
+            <button id="resumeBtn" class="play-btn">RESUME</button>
+        </div>
+
+        <!-- Scanline Effect -->
+        <div class="scanline"></div>
+    </div>
+
+    <!-- Hidden audio elements if needed, or use Web Audio API in script -->
+    <audio id="bgm" src="Feel-Good.mp3" loop></audio>
+
+    <script src="script_tetris.js"></script>
+</body>
+</html>
