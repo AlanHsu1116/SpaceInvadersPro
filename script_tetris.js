@@ -451,10 +451,11 @@ function initMobileControls() {
     const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     if (!isTouchDevice) return;
 
-    document.getElementById('mobileControls').classList.remove('hidden');
+    document.getElementById('gameConsole').classList.remove('hidden');
 
     const handleBtn = (id, action) => {
         const btn = document.getElementById(id);
+        if (!btn) return;
         btn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             if (!gameStarted || paused || gameOver) return;
@@ -465,8 +466,9 @@ function initMobileControls() {
     handleBtn('mLeftBtn', () => playerMove(-1));
     handleBtn('mRightBtn', () => playerMove(1));
     handleBtn('mDownBtn', () => playerDrop());
-    handleBtn('mRotateBtn', () => playerRotate(1));
-    handleBtn('mHardDropBtn', () => playerHardDrop());
+    handleBtn('mUpBtn', () => playerRotate(1));
+    handleBtn('mRotateBtn', () => playerRotate(1)); // A Button
+    handleBtn('mHardDropBtn', () => playerHardDrop()); // B Button
 }
 
 // --- Start ---
