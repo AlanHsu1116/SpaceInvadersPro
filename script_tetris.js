@@ -449,7 +449,17 @@ function update(time = 0) {
 // --- Mobile Controls ---
 function initMobileControls() {
     const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-    if (!isTouchDevice) return;
+    
+    // Always show if it's a touch device
+    if (isTouchDevice) {
+        const controls = document.getElementById('mobileControls');
+        if (controls) {
+            controls.classList.remove('hidden');
+            controls.style.display = 'flex'; // Force display flex to override any CSS issues
+        }
+    } else {
+        return;
+    }
 
     const handleBtn = (id, action) => {
         const btn = document.getElementById(id);
@@ -459,14 +469,19 @@ function initMobileControls() {
             if (!gameStarted || paused || gameOver) return;
             action();
         }, { passive: false });
+        
+        // Add click listener for testing on desktop with mouse if needed
+        btn.addEventListener('click', (e) => {
+             e.preventDefault();
+             if (!gameStarted || paused || gameOver) return;
+             action();
+        });
     };
 
     handleBtn('moveLeftBtn', () => playerMove(-1));
     handleBtn('moveRightBtn', () => playerMove(1));
     handleBtn('rotateBtn', () => playerRotate(1));
     handleBtn('hardDropBtn', () => playerHardDrop());
-    
-    // Support for holding down the move buttons for faster movement can be added later
 }
 
 // --- Start ---
