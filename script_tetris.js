@@ -446,5 +446,29 @@ function update(time = 0) {
     requestAnimationFrame(update);
 }
 
+// --- Mobile Controls ---
+function initMobileControls() {
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (!isTouchDevice) return;
+
+    document.getElementById('mobileControls').classList.remove('hidden');
+
+    const handleBtn = (id, action) => {
+        const btn = document.getElementById(id);
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameStarted || paused || gameOver) return;
+            action();
+        });
+    };
+
+    handleBtn('mLeftBtn', () => playerMove(-1));
+    handleBtn('mRightBtn', () => playerMove(1));
+    handleBtn('mDownBtn', () => playerDrop());
+    handleBtn('mRotateBtn', () => playerRotate(1));
+    handleBtn('mHardDropBtn', () => playerHardDrop());
+}
+
 // --- Start ---
 init();
+initMobileControls();
