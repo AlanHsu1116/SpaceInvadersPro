@@ -32,6 +32,8 @@ let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 let score = 0, level = 1, lines = 0;
 let gameOver = false, paused = false, gameStarted = false;
 let dropCounter = 0, dropInterval = 1000, lastTime = 0;
+let particles = [];
+let screenShake = 0;
 
 let player = {
     pos: { x: 0, y: 0 },
@@ -220,16 +222,66 @@ function playerHardDrop() {
     playSound('drop');
 }
 
+// --- Effects ---
+function createParticles(x, y, color) {
+    for (let i = 0; i < 8; i++) {
+        particles.push({
+            x: x + BLOCK_SIZE / 2,
+            y: y + BLOCK_SIZE / 2,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            size: Math.random() * 4 + 2,
+            color: color,
+            alpha: 1,
+            life: 0.95 + Math.random() * 0.05
+        });
+    }
+}
+
+function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha *= p.life;
+        if (p.alpha < 0.01) particles.splice(i, 1);
+    }
+}
+
+function drawParticles() {
+    particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.restore();
+    });
+}
+
+function triggerShake(intensity = 10) {
+    screenShake = intensity;
+}
+
 function gridSweep() {
     let rowCount = 1;
+    let clearedAny = false;
     for (let y = ROWS - 1; y >= 0; --y) {
         if (grid[y].every(value => value !== 0)) {
+            // Create particles for each block in the line before removing
+            grid[y].forEach((type, x) => {
+                const color = COLORS[type] || '#fff';
+                createParticles(x * BLOCK_SIZE, y * BLOCK_SIZE, color);
+            });
+
             const row = grid.splice(y, 1)[0].fill(0);
             grid.unshift(row);
             y++;
             score += rowCount * 100;
             rowCount *= 2;
             lines++;
+            clearedAny = true;
             if (lines % 10 === 0) {
                 level++;
                 dropInterval = Math.max(100, 1000 - (level - 1) * 100);
@@ -237,6 +289,7 @@ function gridSweep() {
             playSound('clear');
         }
     }
+    if (clearedAny) triggerShake(15);
 }
 
 function updateStats() {
@@ -254,7 +307,7 @@ function handleKeyPress(e) {
         if (e.code === 'Enter') startGame();
         return;
     }
-    if (e.code === 'KeyP') paused = !paused;
+    if (e.code === 'KeyP') togglePause();
     if (paused) return;
 
     if (e.code === 'ArrowLeft') player.pos.x--, collide(grid, player) && player.pos.x++, playSound('move');
@@ -266,6 +319,15 @@ function handleKeyPress(e) {
 
 // --- Drawing ---
 function draw() {
+    ctx.save();
+    if (screenShake > 0) {
+        const sx = (Math.random() - 0.5) * screenShake;
+        const sy = (Math.random() - 0.5) * screenShake;
+        ctx.translate(sx, sy);
+        screenShake *= 0.9;
+        if (screenShake < 0.5) screenShake = 0;
+    }
+
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -279,6 +341,9 @@ function draw() {
         drawGhost();
         drawMatrix(player.shape, player.pos, player.type);
     }
+    
+    drawParticles();
+    ctx.restore();
 }
 
 function drawMatrix(matrix, offset, forcedType = null) {
@@ -303,6 +368,7 @@ function drawMatrix(matrix, offset, forcedType = null) {
 }
 
 function drawGhost() {
+    if (!player.shape) return;
     const ghost = { pos: { x: player.pos.x, y: player.pos.y }, shape: player.shape };
     while (!collide(grid, ghost)) ghost.pos.y++;
     ghost.pos.y--;
@@ -341,9 +407,12 @@ function drawNext() {
 }
 
 function update(time = 0) {
+    const deltaTime = time - lastTime;
+    lastTime = time;
+
+    updateParticles();
+
     if (gameStarted && !paused && !gameOver) {
-        const deltaTime = time - lastTime;
-        lastTime = time;
         dropCounter += deltaTime;
         if (dropCounter > dropInterval) playerDrop();
         draw();
