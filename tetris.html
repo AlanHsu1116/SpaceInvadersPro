@@ -15,41 +15,46 @@
             <div class="top-right-btns">
                 <button id="mobilePauseBtn" class="control-btn mobile-only">PAUSE</button>
                 <button id="bgmBtn" class="control-btn">🔇 音樂: 關</button>
-            </div>
-        </div>
-        
-        <div id="gameLayout">
-            <!-- Left Side: Stats -->
-            <div id="sidePanelLeft" class="side-panel">
-                <div class="stat-box">
-                    <div class="label">SCORE</div>
-                    <div id="scoreDisplay">0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="label">LEVEL</div>
-                    <div id="levelDisplay">1</div>
-                </div>
-            </div>
+            <div id="gameLayout">
+                <!-- Left Side: Stats & Next Piece -->
+                <div id="sidePanelLeft" class="side-panel">
+                    <div class="stat-box">
+                        <div class="label">SCORE</div>
+                        <div id="scoreDisplay">0</div>
+                    </div>
 
-            <!-- Center: Game Canvas -->
-            <div id="canvasContainer">
-                <canvas id="gameCanvas" width="300" height="600"></canvas>
-            </div>
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <div class="label">LEVEL</div>
+                            <div id="levelDisplay">1</div>
+                        </div>
+                        <div class="stat-box next-box">
+                            <div class="label">NEXT</div>
+                            <canvas id="nextCanvas" width="60" height="60"></canvas>
+                        </div>
+                    </div>
 
-            <!-- Right Side: Next Piece -->
-            <div id="sidePanelRight" class="side-panel">
-                <div class="stat-box next-box">
-                    <div class="label">NEXT</div>
-                    <canvas id="nextCanvas" width="80" height="80"></canvas>
+                    <div class="stat-box">
+                        <div class="label">LINES</div>
+                        <div id="linesDisplay">0</div>
+                    </div>
                 </div>
-                
-                <div class="stat-box mobile-hide">
-                    <div class="label">LINES</div>
-                    <div id="linesDisplay">0</div>
+
+                <!-- Center: Game Canvas -->
+                <div id="canvasContainer">
+                    <canvas id="gameCanvas" width="300" height="600"></canvas>
+                </div>
+
+                <!-- Right Side: Empty or potentially for other info later -->
+                <div id="sidePanelRight" class="side-panel mobile-hide">
+                    <div id="controlsGuide">
+                        <div class="guide-item"><span>← →</span> 移動</div>
+                        <div class="guide-item"><span>↑</span> 旋轉</div>
+                        <div class="guide-item"><span>↓</span> 加速</div>
+                        <div class="guide-item"><span>Space</span> 瞬間落下</div>
+                    </div>
                 </div>
             </div>
-        </div>
-
         <!-- Mobile Controls (Ergonomic Layout) -->
         <div id="mobileControls" class="hidden">
             <div class="m-group-left">
