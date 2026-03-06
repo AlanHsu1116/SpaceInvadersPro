@@ -40,7 +40,7 @@ body {
 
 /* Header */
 #top-controls {
-    padding: 15px 20px;
+    padding: 8px 15px; /* Reduced from 15px 20px */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -49,7 +49,7 @@ body {
 }
 
 .game-title-small {
-    font-size: 1.5rem;
+    font-size: 1.2rem; /* Reduced from 1.5rem */
     font-weight: bold;
     color: var(--neon-blue);
     text-shadow: 0 0 10px var(--neon-blue);
@@ -60,9 +60,10 @@ body {
     background: transparent;
     border: 1px solid var(--neon-blue);
     color: var(--neon-blue);
-    padding: 8px 15px;
+    padding: 5px 12px; /* Reduced from 8px 15px */
     cursor: pointer;
     font-family: 'Exo 2', sans-serif;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
 }
 
