@@ -218,9 +218,13 @@ function gridSweep() {
 }
 
 function updateStats() {
-    document.getElementById('scoreDisplay').textContent = score;
-    document.getElementById('levelDisplay').textContent = level;
-    document.getElementById('linesDisplay').textContent = lines;
+    const scoreEl = document.getElementById('scoreDisplay');
+    const levelEl = document.getElementById('levelDisplay');
+    const linesEl = document.getElementById('linesDisplay');
+    
+    if (scoreEl) scoreEl.textContent = score;
+    if (levelEl) levelEl.textContent = level;
+    if (linesEl) linesEl.textContent = lines;
 }
 
 function handleKeyPress(e) {
