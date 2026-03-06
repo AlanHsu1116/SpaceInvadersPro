@@ -373,7 +373,7 @@ function drawGhost() {
     while (!collide(grid, ghost)) ghost.pos.y++;
     ghost.pos.y--;
     ctx.save();
-    ctx.globalAlpha = 0.15;
+    ctx.globalAlpha = 0.4; // Increased from 0.15 for better visibility
     drawMatrix(ghost.shape, ghost.pos, player.type);
     ctx.restore();
 }
