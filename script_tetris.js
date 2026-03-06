@@ -406,15 +406,31 @@ function drawNext() {
         shape.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value !== 0) {
+                    const type = player.next;
+                    const baseColor = COLORS[type] || '#fff';
+                    const dx = offX + x * bSize;
+                    const dy = offY + y * bSize;
+                    
                     nextCtx.save();
-                    const color = COLORS[player.next] || '#fff';
-                    nextCtx.font = `${bSize-2}px sans-serif`;
-                    nextCtx.textAlign = 'center';
-                    nextCtx.textBaseline = 'middle';
+                    
+                    // Metallic Gradient
+                    const gradient = nextCtx.createLinearGradient(dx, dy, dx + bSize, dy + bSize);
+                    gradient.addColorStop(0, '#fff'); // Light highlight
+                    gradient.addColorStop(0.2, baseColor);
+                    gradient.addColorStop(0.5, baseColor);
+                    gradient.addColorStop(0.8, '#000'); // Shadow
+                    gradient.addColorStop(1, baseColor);
+                    
+                    nextCtx.fillStyle = gradient;
                     nextCtx.shadowBlur = 5;
-                    nextCtx.shadowColor = color;
-                    nextCtx.fillStyle = color;
-                    nextCtx.fillText(EMOJIS[player.next], offX + x*bSize + bSize/2, offY + y*bSize + bSize/2);
+                    nextCtx.shadowColor = baseColor;
+                    nextCtx.fillRect(dx + 1, dy + 1, bSize - 2, bSize - 2);
+                    
+                    // Bevel Effect (Inner Border)
+                    nextCtx.lineWidth = 1;
+                    nextCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                    nextCtx.strokeRect(dx + 1, dy + 1, bSize - 2, bSize - 2);
+                    
                     nextCtx.restore();
                 }
             });
