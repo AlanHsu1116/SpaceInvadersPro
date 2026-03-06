@@ -342,6 +342,8 @@ function handleKeyPress(e) {
 
 // --- Drawing ---
 function draw() {
+    if (!ctx) return;
+
     // Clear Canvas
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -363,34 +365,48 @@ function draw() {
     }
 
     drawMatrix(grid, { x: 0, y: 0 });
-    if (gameStarted) {
-        drawMatrix(player.shape, player.pos);
+    
+    if (gameStarted && player.shape) {
+        // Draw Ghost Piece first
         drawGhost();
+        // Draw Active Piece
+        drawMatrix(player.shape, player.pos, player.type);
     }
 }
 
-function drawMatrix(matrix, offset) {
+function drawMatrix(matrix, offset, forcedType = null) {
     matrix.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
-                const type = value.length > 1 ? value : value; // value is type string or 0
-                const char = EMOJIS[value] || '🧱';
+                // If it's the active piece (value is 1), use forcedType. 
+                // If it's the grid (value is 'I', 'J', etc.), use value.
+                const type = forcedType || value;
+                const char = EMOJIS[type] || '🧱';
+                const color = COLORS[type] || '#fff';
                 
+                ctx.save();
                 ctx.font = `${BLOCK_SIZE - 4}px "Exo 2"`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(char, (x + offset.x) * BLOCK_SIZE + BLOCK_SIZE/2, (y + offset.y) * BLOCK_SIZE + BLOCK_SIZE/2);
                 
                 // Neon glow
                 ctx.shadowBlur = 10;
-                ctx.shadowColor = COLORS[value];
+                ctx.shadowColor = color;
+                ctx.fillStyle = color;
+                
+                const drawX = (x + offset.x) * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const drawY = (y + offset.y) * BLOCK_SIZE + BLOCK_SIZE / 2;
+                
+                ctx.fillText(char, drawX, drawY);
+                ctx.restore();
             }
         });
     });
-    ctx.shadowBlur = 0;
 }
 
 function drawGhost() {
+    if (!player.shape) return;
+    
     const ghost = {
         pos: { x: player.pos.x, y: player.pos.y },
         shape: player.shape
@@ -401,30 +417,41 @@ function drawGhost() {
     }
     ghost.pos.y--;
     
+    ctx.save();
     ctx.globalAlpha = 0.2;
-    drawMatrix(ghost.shape, ghost.pos);
-    ctx.globalAlpha = 1.0;
+    drawMatrix(ghost.shape, ghost.pos, player.type);
+    ctx.restore();
 }
 
 function drawNext() {
+    if (!nextCtx) return;
     nextCtx.fillStyle = '#000';
     nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
     
     if (player.next) {
         const shape = SHAPES[player.next];
         const char = EMOJIS[player.next];
+        const color = COLORS[player.next] || '#fff';
+        
+        const blockSize = 20; // Smaller for next preview
         const offset = {
-            x: (nextCanvas.width / BLOCK_SIZE - shape[0].length) / 2,
-            y: (nextCanvas.height / BLOCK_SIZE - shape.length) / 2
+            x: (nextCanvas.width / blockSize - shape[0].length) / 2,
+            y: (nextCanvas.height / blockSize - shape.length) / 2
         };
         
         shape.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value !== 0) {
-                    nextCtx.font = `${BLOCK_SIZE - 4}px "Exo 2"`;
+                    nextCtx.save();
+                    nextCtx.font = `${blockSize - 2}px "Exo 2"`;
                     nextCtx.textAlign = 'center';
                     nextCtx.textBaseline = 'middle';
-                    nextCtx.fillText(char, (x + offset.x) * BLOCK_SIZE + BLOCK_SIZE/2, (y + offset.y) * BLOCK_SIZE + BLOCK_SIZE/2);
+                    nextCtx.shadowBlur = 5;
+                    nextCtx.shadowColor = color;
+                    nextCtx.fillStyle = color;
+                    
+                    nextCtx.fillText(char, (x + offset.x) * blockSize + blockSize/2, (y + offset.y) * blockSize + blockSize/2);
+                    nextCtx.restore();
                 }
             });
         });
