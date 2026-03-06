@@ -283,6 +283,19 @@ body {
     .side-panel {
         width: 70px;
         gap: 8px;
+        justify-content: flex-start;
+    }
+
+    .next-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #nextCanvas {
+        width: 60px !important;
+        height: 60px !important;
     }
 
     .stat-box {
