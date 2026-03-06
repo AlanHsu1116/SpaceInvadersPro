@@ -77,15 +77,15 @@ body {
     background: var(--neon-blue);
     color: #000;
 }
-
 /* Layout */
 #gameLayout {
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Aligns items to the top */
     gap: 20px;
     padding: 10px;
+}
     overflow: hidden;
 }
 
