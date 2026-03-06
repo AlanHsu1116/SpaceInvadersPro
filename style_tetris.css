@@ -11,6 +11,7 @@
 * {
     box-sizing: border-box;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -56,6 +57,11 @@ body {
     letter-spacing: 2px;
 }
 
+.top-right-btns {
+    display: flex;
+    gap: 10px;
+}
+
 #backToMenuBtn, .control-btn {
     background: transparent;
     border: 1px solid var(--neon-blue);
@@ -70,7 +76,6 @@ body {
 #backToMenuBtn:hover, .control-btn:hover {
     background: var(--neon-blue);
     color: #000;
-    box-shadow: 0 0 15px var(--neon-blue);
 }
 
 /* Layout */
@@ -81,6 +86,7 @@ body {
     align-items: center;
     gap: 20px;
     padding: 10px;
+    overflow: hidden;
 }
 
 .side-panel {
@@ -95,6 +101,8 @@ body {
     box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
     background: rgba(0, 0, 0, 0.8);
     line-height: 0;
+    display: flex;
+    align-items: center;
 }
 
 #gameCanvas {
@@ -155,14 +163,14 @@ body {
 }
 
 .neon-text {
-    font-size: 4rem;
+    font-size: 3rem;
     color: #fff;
-    text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue), 0 0 40px var(--neon-blue);
+    text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
     margin-bottom: 10px;
 }
 
 .danger-text {
-    font-size: 4rem;
+    font-size: 3rem;
     color: #fff;
     text-shadow: 0 0 10px var(--neon-red), 0 0 20px var(--neon-red);
     margin-bottom: 20px;
@@ -193,11 +201,11 @@ body {
     box-shadow: 0 0 30px var(--neon-blue);
 }
 
-/* Mobile Controls */
+/* Mobile Controls - Default Hidden */
 #mobileControls {
     display: none;
     background: rgba(17, 17, 28, 0.95);
-    padding: 10px 10px 30px; /* Added more bottom padding for safe area */
+    padding: 10px 10px 30px;
     justify-content: space-between;
     align-items: center;
     z-index: 1000;
@@ -211,7 +219,7 @@ body {
 }
 
 #mobileControls button {
-    width: 55px; /* Slightly smaller to fit more screens */
+    width: 55px;
     height: 55px;
     background: #222;
     border: 2px solid var(--neon-blue);
@@ -230,6 +238,7 @@ body {
 #mobileControls button:active {
     background: var(--neon-blue);
     color: #000;
+    transform: scale(0.95);
 }
 
 #rotateBtn { border-color: var(--neon-purple); color: var(--neon-purple); }
@@ -237,6 +246,7 @@ body {
 
 .mobile-only { display: none; }
 
+/* Mobile Adaptations */
 @media (max-width: 768px) {
     .mobile-only { display: block; }
     .mobile-hide { display: none !important; }
@@ -250,37 +260,25 @@ body {
     }
 
     #gameLayout {
-        flex: 1; /* Take up available space */
+        flex: 1;
         flex-direction: row;
-        justify-content: center;
-        padding: 5px 2px; /* Removed large padding-bottom */
+        justify-content: space-between;
+        padding: 5px;
         gap: 5px;
-        overflow: hidden;
     }
 
     #canvasContainer {
         flex: 1;
         max-width: 60%;
-        display: flex;
-        align-items: center;
+        border-width: 2px;
     }
 
     #gameCanvas {
         width: 100%;
         height: auto;
-        max-height: 55vh; /* Reduced to ensure it fits above controls */
+        max-height: 55vh;
         object-fit: contain;
     }
-
-    .side-panel {
-        width: 60px;
-        gap: 5px;
-    }
-
-    #mobileControls {
-        display: flex; /* Part of the flex column now */
-    }
-}
 
     .side-panel {
         width: 70px;
@@ -295,10 +293,12 @@ body {
     .stat-box .label { font-size: 0.5rem; }
     .stat-box #scoreDisplay, .stat-box #levelDisplay { font-size: 0.8rem; }
 
-    #mobileControls { display: flex; }
+    #mobileControls {
+        display: flex !important;
+    }
 }
 
-/* Scanline */
+/* Effects */
 .scanline {
     width: 100%;
     height: 100px;
