@@ -29,7 +29,7 @@ body {
 #gameWrapper {
     width: 100%;
     max-width: 1000px;
-    height: 90vh;
+    height: 95vh;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -40,7 +40,7 @@ body {
 
 /* Header */
 #top-controls {
-    padding: 8px 15px; /* Reduced from 15px 20px */
+    padding: 8px 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -49,7 +49,7 @@ body {
 }
 
 .game-title-small {
-    font-size: 1.2rem; /* Reduced from 1.5rem */
+    font-size: 1.2rem;
     font-weight: bold;
     color: var(--neon-blue);
     text-shadow: 0 0 10px var(--neon-blue);
@@ -60,7 +60,7 @@ body {
     background: transparent;
     border: 1px solid var(--neon-blue);
     color: var(--neon-blue);
-    padding: 5px 12px; /* Reduced from 8px 15px */
+    padding: 5px 12px;
     cursor: pointer;
     font-family: 'Exo 2', sans-serif;
     font-size: 0.9rem;
@@ -79,15 +79,15 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 40px;
-    padding: 20px;
+    gap: 20px;
+    padding: 10px;
 }
 
 .side-panel {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    width: 150px;
+    gap: 15px;
+    width: 120px;
 }
 
 #canvasContainer {
@@ -119,32 +119,20 @@ body {
 .stat-box #scoreDisplay, 
 .stat-box #levelDisplay, 
 .stat-box #linesDisplay {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: bold;
+}
+
+.next-box {
+    border-left-color: var(--neon-purple);
 }
 
 #nextCanvas {
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(0, 242, 255, 0.2);
+    border: 1px solid rgba(191, 0, 255, 0.2);
     margin-top: 5px;
-}
-
-/* Controls Guide */
-#controlsGuide {
-    margin-top: 20px;
-    font-size: 0.8rem;
-    color: #aaa;
-}
-
-.guide-item {
-    margin-bottom: 8px;
-}
-
-.guide-item span {
-    color: var(--neon-blue);
-    font-weight: bold;
-    display: inline-block;
     width: 60px;
+    height: 60px;
 }
 
 /* Overlays */
@@ -205,20 +193,9 @@ body {
     box-shadow: 0 0 30px var(--neon-blue);
 }
 
-.final-stats {
-    margin-bottom: 30px;
-    text-align: center;
-    font-size: 1.2rem;
-}
-
-.final-stats span {
-    color: var(--neon-blue);
-    font-weight: bold;
-}
-
-/* Mobile Controls (Ergonomic Console Style) */
+/* Mobile Controls */
 #mobileControls {
-    display: none; /* Hidden on desktop */
+    display: none;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -237,17 +214,16 @@ body {
 }
 
 #mobileControls button {
-    width: 75px;
-    height: 75px;
+    width: 70px;
+    height: 70px;
     background: #222;
     border: 3px solid var(--neon-blue);
     color: var(--neon-blue);
     border-radius: 50%;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: bold;
     font-family: 'Exo 2', sans-serif;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -257,36 +233,16 @@ body {
 #mobileControls button:active {
     background: var(--neon-blue);
     color: #000;
-    transform: scale(0.95);
 }
 
-/* Specific Action Colors */
-#rotateBtn {
-    border-color: var(--neon-purple) !important;
-    color: var(--neon-purple) !important;
-    font-size: 1rem !important;
-}
+#rotateBtn { border-color: var(--neon-purple); color: var(--neon-purple); }
+#hardDropBtn { border-color: var(--neon-pink); color: var(--neon-pink); }
 
-#hardDropBtn {
-    border-color: var(--neon-pink) !important;
-    color: var(--neon-pink) !important;
-    font-size: 1rem !important;
-}
-
-/* Header Buttons */
-.top-right-btns {
-    display: flex;
-    gap: 10px;
-}
-
-.mobile-only {
-    display: none;
-}
+.mobile-only { display: none; }
 
 @media (max-width: 768px) {
-    .mobile-only {
-        display: block;
-    }
+    .mobile-only { display: block; }
+    .mobile-hide { display: none !important; }
 
     #gameWrapper {
         height: 100vh;
@@ -297,51 +253,35 @@ body {
     #gameLayout {
         flex-direction: row;
         justify-content: center;
-        padding: 10px 5px 150px; /* Space for dual-side controls */
+        padding: 5px 2px 140px;
         gap: 5px;
     }
 
-    #mobileControls {
-        display: flex;
-    }
-
-    .mobile-hide {
-        display: none !important;
-    }
-
     #canvasContainer {
-        max-width: 55%;
+        flex: 1;
+        max-width: 65%;
+    }
+
+    #gameCanvas {
+        width: 100%;
+        height: auto;
+        max-height: 65vh;
     }
 
     .side-panel {
-        width: 80px;
-        gap: 10px;
+        width: 70px;
+        gap: 8px;
     }
 
     .stat-box {
         padding: 5px;
-        width: 100%;
+        border-left-width: 2px;
     }
 
-    /* Shrink NEXT box */
-    .next-box {
-        padding: 5px;
-        border-left: 2px solid var(--neon-purple);
-    }
+    .stat-box .label { font-size: 0.5rem; }
+    .stat-box #scoreDisplay, .stat-box #levelDisplay { font-size: 0.8rem; }
 
-    #nextCanvas {
-        width: 60px;
-        height: 60px;
-    }
-
-    .stat-box .label {
-        font-size: 0.6rem;
-    }
-
-    .stat-box #scoreDisplay, 
-    .stat-box #levelDisplay {
-        font-size: 0.9rem;
-    }
+    #mobileControls { display: flex; }
 }
 
 /* Scanline */
@@ -361,27 +301,4 @@ body {
     0% { bottom: 100%; }
     80% { bottom: 100%; }
     100% { bottom: -100px; }
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-    #gameLayout {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .side-panel {
-        flex-direction: row;
-        width: 100%;
-        justify-content: center;
-    }
-    
-    #controlsGuide {
-        display: none;
-    }
-    
-    #gameCanvas {
-        max-height: 50vh;
-        width: auto;
-    }
 }

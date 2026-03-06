@@ -4,8 +4,8 @@
 
 // --- Configuration ---
 const COLS = 10;
-const ROWS = 20;
-const BLOCK_SIZE = 30;
+const ROWS = 24;
+const BLOCK_SIZE = 32;
 
 const COLORS = {
     I: '#00f2ff', J: '#0077ff', L: '#ffaa00',
@@ -373,7 +373,7 @@ function drawGhost() {
     while (!collide(grid, ghost)) ghost.pos.y++;
     ghost.pos.y--;
     ctx.save();
-    ctx.globalAlpha = 0.6; // Increased to 0.6 for even higher visibility
+    ctx.globalAlpha = 0.2; // Decreased for less visual pressure
     drawMatrix(ghost.shape, ghost.pos, player.type);
     ctx.restore();
 }
