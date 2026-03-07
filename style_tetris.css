@@ -144,6 +144,11 @@ body {
     align-items: center;
     z-index: 100;
 }
+.hidden { display: none !important; }
+
+/* Mobile Controls */
+#mobileControls { display: none; }
+
 .menu-btns {
     display: flex;
     flex-direction: column;

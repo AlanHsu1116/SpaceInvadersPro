@@ -106,7 +106,10 @@ function init() {
 
     document.addEventListener('keydown', handleKeyPress);
     initMobileControls();
-    draw(); // Draw initial empty grid
+    
+    // Start the game loop once
+    lastTime = performance.now();
+    requestAnimationFrame(update);
 }
 
 function startGame() {
@@ -114,6 +117,8 @@ function startGame() {
     score = 0; level = 1; lines = 0;
     dropInterval = 1000;
     gameOver = false; paused = false; gameStarted = true;
+    fallingBlocks = [];
+    isCascading = false;
 
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('gameOverScreen').classList.add('hidden');
@@ -121,7 +126,6 @@ function startGame() {
 
     playerReset();
     updateStats();
-    requestAnimationFrame(update);
 }
 
 function playerReset() {
