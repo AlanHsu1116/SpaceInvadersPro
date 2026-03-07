@@ -435,60 +435,61 @@ function draw() {
     for(let x=0; x<=COLS; x++) { ctx.beginPath(); ctx.moveTo(x*BLOCK_SIZE,0); ctx.lineTo(x*BLOCK_SIZE,canvas.height); ctx.stroke(); }
     for(let y=0; y<=ROWS; y++) { ctx.beginPath(); ctx.moveTo(0,y*BLOCK_SIZE); ctx.lineTo(canvas.width,y*BLOCK_SIZE); ctx.stroke(); }
 
-    drawMatrix(grid, { x: 0, y: 0 });
+    drawMatrix(grid, { x: 0, y: 0 }, null, ctx);
     
     // Draw animated falling blocks during cascade
     if (isCascading) {
         fallingBlocks.forEach(b => {
             const matrix = [[b.type]];
-            drawMatrix(matrix, { x: b.x, y: b.y + b.currentYOffset });
+            drawMatrix(matrix, { x: b.x, y: b.y + b.currentYOffset }, null, ctx);
         });
     }
 
     if (gameStarted && player.shape && !isCascading) {
         drawGhost();
-        drawMatrix(player.shape, player.pos, player.type);
+        drawMatrix(player.shape, player.pos, player.type, ctx);
     }
     
     drawParticles();
     ctx.restore();
+
+    // Always draw next piece to ensure its canvas is clear and updated
+    drawNext();
 }
 
-function drawMatrix(matrix, offset, forcedType = null) {
+function drawMatrix(matrix, offset, forcedType = null, targetCtx = ctx) {
     matrix.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
                 const type = forcedType || value;
                 const baseColor = COLORS[type] || '#fff';
-                const drawX = (x + offset.x) * BLOCK_SIZE;
-                const drawY = (y + offset.y) * BLOCK_SIZE;
+                const drawX = (x + offset.x) * (targetCtx === nextCtx ? 14 : BLOCK_SIZE);
+                const drawY = (y + offset.y) * (targetCtx === nextCtx ? 14 : BLOCK_SIZE);
+                const size = (targetCtx === nextCtx ? 14 : BLOCK_SIZE);
                 
-                ctx.save();
+                targetCtx.save();
                 
                 // 1. Neon Shadow Glow
-                ctx.shadowBlur = 12;
-                ctx.shadowColor = baseColor;
+                targetCtx.shadowBlur = targetCtx === nextCtx ? 5 : 12;
+                targetCtx.shadowColor = baseColor;
                 
                 // 2. Metallic Gradient Background
-                const gradient = ctx.createLinearGradient(drawX, drawY, drawX + BLOCK_SIZE, drawY + BLOCK_SIZE);
+                const gradient = targetCtx.createLinearGradient(drawX, drawY, drawX + size, drawY + size);
                 gradient.addColorStop(0, '#fff'); // Light highlight
                 gradient.addColorStop(0.2, baseColor);
                 gradient.addColorStop(0.5, baseColor);
                 gradient.addColorStop(0.8, '#000'); // Shadow
                 gradient.addColorStop(1, baseColor);
                 
-                ctx.fillStyle = gradient;
-                ctx.fillRect(drawX + 1, drawY + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+                targetCtx.fillStyle = gradient;
+                targetCtx.fillRect(drawX + 1, drawY + 1, size - 2, size - 2);
                 
                 // 3. Bevel Effect (Inner Border)
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.strokeRect(drawX + 2, drawY + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
-                
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-                ctx.strokeRect(drawX + 4, drawY + 4, BLOCK_SIZE - 8, BLOCK_SIZE - 8);
+                targetCtx.lineWidth = targetCtx === nextCtx ? 1 : 2;
+                targetCtx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                targetCtx.strokeRect(drawX + (targetCtx === nextCtx ? 1 : 2), drawY + (targetCtx === nextCtx ? 1 : 2), size - (targetCtx === nextCtx ? 2 : 4), size - (targetCtx === nextCtx ? 2 : 4));
 
-                ctx.restore();
+                targetCtx.restore();
             }
         });
     });
@@ -501,7 +502,7 @@ function drawGhost() {
     ghost.pos.y--;
     ctx.save();
     ctx.globalAlpha = 0.15; // Decreased for very faint hint
-    drawMatrix(ghost.shape, ghost.pos, 'GHOST');
+    drawMatrix(ghost.shape, ghost.pos, 'GHOST', ctx);
     ctx.restore();
 }
 
@@ -512,42 +513,12 @@ function drawNext() {
     if (player.next) {
         const shape = SHAPES[player.next];
         const bSize = 14; // Smaller preview size
-        const offX = (nextCanvas.width - shape[0].length * bSize) / 2;
-        const offY = (nextCanvas.height - shape.length * bSize) / 2;
-        shape.forEach((row, y) => {
-            row.forEach((value, x) => {
-                if (value !== 0) {
-                    const type = player.next;
-                    const baseColor = COLORS[type] || '#fff';
-                    const dx = offX + x * bSize;
-                    const dy = offY + y * bSize;
-                    
-                    nextCtx.save();
-                    
-                    // Metallic Gradient
-                    const gradient = nextCtx.createLinearGradient(dx, dy, dx + bSize, dy + bSize);
-                    gradient.addColorStop(0, '#fff'); // Light highlight
-                    gradient.addColorStop(0.2, baseColor);
-                    gradient.addColorStop(0.5, baseColor);
-                    gradient.addColorStop(0.8, '#000'); // Shadow
-                    gradient.addColorStop(1, baseColor);
-                    
-                    nextCtx.fillStyle = gradient;
-                    nextCtx.shadowBlur = 5;
-                    nextCtx.shadowColor = baseColor;
-                    nextCtx.fillRect(dx + 1, dy + 1, bSize - 2, bSize - 2);
-                    
-                    // Bevel Effect (Inner Border)
-                    nextCtx.lineWidth = 1;
-                    nextCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-                    nextCtx.strokeRect(dx + 1, dy + 1, bSize - 2, bSize - 2);
-                    
-                    nextCtx.restore();
-                }
-            });
-        });
+        const offX = (nextCanvas.width - shape[0].length * bSize) / 2 / bSize;
+        const offY = (nextCanvas.height - shape.length * bSize) / 2 / bSize;
+        drawMatrix(shape, { x: offX, y: offY }, player.next, nextCtx);
     }
 }
+
 
 function update(time = 0) {
     const deltaTime = time - lastTime;
