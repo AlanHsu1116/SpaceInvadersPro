@@ -327,26 +327,76 @@ body {
 
     #mobileControls {
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
         align-items: center;
-        padding: 10px 10px calc(15px + env(safe-area-inset-bottom));
-        background: rgba(10, 10, 12, 0.95);
-        border-top: 1px solid #333;
+        padding: 20px 20px calc(30px + env(safe-area-inset-bottom));
+        background: rgba(15, 15, 20, 0.98);
+        border-top: 2px solid #333;
         flex-shrink: 0;
+        gap: 10px;
     }
     
     #mobileControls button {
-        width: 50px; height: 50px;
-        background: #222; border: 2px solid var(--neon-blue);
-        color: var(--neon-blue); border-radius: 50%;
-        font-size: 0.75rem; font-weight: bold;
+        position: relative;
+        background: #2a2a35;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        font-family: 'Exo 2', sans-serif;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.1s, box-shadow 0.1s;
+        /* 3D Depth */
+        box-shadow: 0 6px 0 #15151a, 0 8px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    #mobileControls button:active {
+        transform: translateY(4px);
+        box-shadow: 0 2px 0 #15151a, 0 4px 8px rgba(0, 0, 0, 0.5);
     }
     
-    .m-group-left, .m-group-right { display: flex; gap: 15px; }
-
-    #rotateBtn { border-color: var(--neon-purple); color: var(--neon-purple); }
-    #hardDropBtn { border-color: var(--neon-pink); color: var(--neon-pink); }
+    /* Arrow Buttons */
+    .arrow-btn {
+        width: 65px !important;
+        height: 55px !important;
+        border-radius: 8px !important;
+        font-size: 1.5rem !important;
+        background: linear-gradient(135deg, #333 0%, #1a1a1a 100%) !important;
+        border-color: var(--neon-blue) !important;
+        color: var(--neon-blue) !important;
+        text-shadow: 0 0 10px var(--neon-blue);
+    }
     
+    /* AB Buttons */
+    .ab-btn {
+        width: 65px !important;
+        height: 65px !important;
+        border-radius: 50% !important;
+        font-size: 1.4rem !important;
+    }
+
+    #rotateBtn { 
+        background: linear-gradient(135deg, #4b0082 0%, #2a004a 100%) !important;
+        border-color: var(--neon-purple) !important;
+        color: var(--neon-purple) !important;
+        text-shadow: 0 0 10px var(--neon-purple);
+        box-shadow: 0 6px 0 #200030, 0 8px 15px rgba(0, 0, 0, 0.5) !important;
+    }
+    #rotateBtn:active { box-shadow: 0 2px 0 #200030, 0 4px 8px rgba(0, 0, 0, 0.5) !important; }
+
+    #hardDropBtn { 
+        background: linear-gradient(135deg, #800040 0%, #400020 100%) !important;
+        border-color: var(--neon-pink) !important;
+        color: var(--neon-pink) !important;
+        text-shadow: 0 0 10px var(--neon-pink);
+        box-shadow: 0 6px 0 #300015, 0 8px 15px rgba(0, 0, 0, 0.5) !important;
+    }
+    #hardDropBtn:active { box-shadow: 0 2px 0 #300015, 0 4px 8px rgba(0, 0, 0, 0.5) !important; }
+
+    .m-group-left { display: flex; gap: 25px; } /* Wider gap for movement */
+    .m-group-right { display: flex; gap: 20px; }
+
     .mobile-hide { display: none !important; }
 }
 
