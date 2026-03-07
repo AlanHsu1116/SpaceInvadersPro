@@ -65,7 +65,10 @@
         <div id="startScreen" class="overlay">
             <h1 class="neon-text">TETRIS PRO</h1>
             <p class="subtitle">RETRO NEON EDITION</p>
-            <button id="startBtn" class="play-btn">START GAME</button>
+            <div class="menu-btns">
+                <button id="startBtn" class="play-btn">START GAME</button>
+                <button id="leaderboardBtn" class="play-btn">LEADERBOARD</button>
+            </div>
         </div>
 
         <div id="gameOverScreen" class="overlay hidden">
@@ -75,7 +78,20 @@
                 <p>Level: <span id="finalLevel">1</span></p>
                 <p>Lines: <span id="finalLines">0</span></p>
             </div>
+            <div id="highScoreInput" class="hidden">
+                <p class="neon-text-small">NEW HIGH SCORE!</p>
+                <input type="text" id="playerNameInput" maxlength="10" placeholder="ENTER NAME">
+                <button id="saveScoreBtn" class="play-btn">SAVE RECORD</button>
+            </div>
             <button id="restartBtn" class="play-btn">TRY AGAIN</button>
+        </div>
+
+        <div id="leaderboardScreen" class="overlay hidden">
+            <h1 class="neon-text">TOP SCORES</h1>
+            <div id="leaderboardList">
+                <!-- Scores will be injected here -->
+            </div>
+            <button id="closeLeaderboardBtn" class="play-btn">BACK</button>
         </div>
 
         <div id="pauseScreen" class="overlay hidden">

@@ -35,6 +35,8 @@ let gameOver = false, paused = false, gameStarted = false;
 let dropCounter = 0, dropInterval = 1000, lastTime = 0;
 let particles = [];
 let screenShake = 0;
+let isCascading = false;
+let fallingBlocks = []; // { x, y, targetY, type, currentYOffset }
 
 let player = {
     pos: { x: 0, y: 0 },
@@ -86,6 +88,11 @@ function init() {
     document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('restartBtn').addEventListener('click', startGame);
     document.getElementById('resumeBtn').addEventListener('click', togglePause);
+    document.getElementById('leaderboardBtn').addEventListener('click', () => showLeaderboard());
+    document.getElementById('closeLeaderboardBtn').addEventListener('click', () => {
+        document.getElementById('leaderboardScreen').classList.add('hidden');
+    });
+    document.getElementById('saveScoreBtn').addEventListener('click', saveScore);
     
     // Toggle pause on canvas click
     canvas.addEventListener('click', togglePause);
@@ -132,9 +139,57 @@ function playerReset() {
         gameOver = true;
         gameStarted = false;
         document.getElementById('finalScore').textContent = score;
+        document.getElementById('finalLevel').textContent = level;
+        document.getElementById('finalLines').textContent = lines;
         document.getElementById('gameOverScreen').classList.remove('hidden');
+        checkHighScore();
     }
     drawNext();
+}
+
+// --- Leaderboard Logic ---
+function checkHighScore() {
+    const scores = JSON.parse(localStorage.getItem('tetris_scores') || '[]');
+    const isHighScore = scores.length < 5 || score > scores[scores.length - 1].score;
+    
+    if (isHighScore && score > 0) {
+        document.getElementById('highScoreInput').classList.remove('hidden');
+    } else {
+        document.getElementById('highScoreInput').classList.add('hidden');
+    }
+}
+
+function saveScore() {
+    const nameInput = document.getElementById('playerNameInput');
+    const name = nameInput.value.trim() || 'ANONYMOUS';
+    let scores = JSON.parse(localStorage.getItem('tetris_scores') || '[]');
+    
+    scores.push({ name, score, date: new Date().toLocaleDateString() });
+    scores.sort((a, b) => b.score - a.score);
+    scores = scores.slice(0, 5); // Keep top 5
+    
+    localStorage.setItem('tetris_scores', JSON.stringify(scores));
+    document.getElementById('highScoreInput').classList.add('hidden');
+    showLeaderboard();
+}
+
+function showLeaderboard() {
+    const scores = JSON.parse(localStorage.getItem('tetris_scores') || '[]');
+    const list = document.getElementById('leaderboardList');
+    list.innerHTML = '';
+    
+    if (scores.length === 0) {
+        list.innerHTML = '<div class="score-row">NO RECORDS YET</div>';
+    } else {
+        scores.forEach((s, i) => {
+            const row = document.createElement('div');
+            row.className = 'score-row';
+            row.innerHTML = `<span>${i + 1}. ${s.name}</span> <span>${s.score}</span>`;
+            list.appendChild(row);
+        });
+    }
+    
+    document.getElementById('leaderboardScreen').classList.remove('hidden');
 }
 
 function collide(grid, player) {
@@ -265,7 +320,6 @@ function triggerShake(intensity = 10) {
 function gridSweep() {
     let rowCount = 1;
     let clearedAny = false;
-    let clearedLinesCount = 0;
 
     // First pass: identify and remove full rows
     for (let y = ROWS - 1; y >= 0; --y) {
@@ -280,7 +334,6 @@ function gridSweep() {
             grid.unshift(Array(COLS).fill(0));
             y++; // Check the new row at this position
             
-            clearedLinesCount++;
             clearedAny = true;
             score += rowCount * 100;
             rowCount *= 2;
@@ -294,24 +347,34 @@ function gridSweep() {
         }
     }
 
-    // Second pass: CASCADE GRAVITY (Avalanche)
-    // If lines were cleared, we let blocks fall independently into gaps
+    // CASCADE ANIMATION PREP
     if (clearedAny) {
+        fallingBlocks = [];
+        // Scan grid from bottom up to find blocks with air beneath
         for (let x = 0; x < COLS; x++) {
-            let columnBlocks = [];
-            // Extract all blocks from this column
-            for (let y = 0; y < ROWS; y++) {
-                if (grid[y][x] !== 0) {
-                    columnBlocks.push(grid[y][x]);
-                    grid[y][x] = 0; // Clear it
+            let emptySpacesBelow = 0;
+            for (let y = ROWS - 1; y >= 0; y--) {
+                if (grid[y][x] === 0) {
+                    emptySpacesBelow++;
+                } else if (emptySpacesBelow > 0) {
+                    // This block needs to fall
+                    fallingBlocks.push({
+                        x: x,
+                        y: y,
+                        targetY: y + emptySpacesBelow,
+                        type: grid[y][x],
+                        currentYOffset: 0
+                    });
+                    grid[y][x] = 0; // Temporarily remove from grid
                 }
             }
-            // Put them back from the bottom up
-            for (let i = 0; i < columnBlocks.length; i++) {
-                grid[ROWS - 1 - i][x] = columnBlocks[columnBlocks.length - 1 - i];
-            }
         }
-        triggerShake(15);
+        
+        if (fallingBlocks.length > 0) {
+            isCascading = true;
+        } else {
+            triggerShake(15);
+        }
     }
 }
 
@@ -360,7 +423,16 @@ function draw() {
     for(let y=0; y<=ROWS; y++) { ctx.beginPath(); ctx.moveTo(0,y*BLOCK_SIZE); ctx.lineTo(canvas.width,y*BLOCK_SIZE); ctx.stroke(); }
 
     drawMatrix(grid, { x: 0, y: 0 });
-    if (gameStarted && player.shape) {
+    
+    // Draw animated falling blocks during cascade
+    if (isCascading) {
+        fallingBlocks.forEach(b => {
+            const matrix = [[b.type]];
+            drawMatrix(matrix, { x: b.x, y: b.y + b.currentYOffset });
+        });
+    }
+
+    if (gameStarted && player.shape && !isCascading) {
         drawGhost();
         drawMatrix(player.shape, player.pos, player.type);
     }
@@ -471,11 +543,35 @@ function update(time = 0) {
     updateParticles();
 
     if (gameStarted && !paused && !gameOver) {
-        dropCounter += deltaTime;
-        if (dropCounter > dropInterval) playerDrop();
+        if (isCascading) {
+            let allFinished = true;
+            fallingBlocks.forEach(b => {
+                const speed = 0.3; // rows per frame
+                if (b.y + b.currentYOffset < b.targetY) {
+                    b.currentYOffset += speed;
+                    allFinished = false;
+                    if (b.y + b.currentYOffset > b.targetY) {
+                        b.currentYOffset = b.targetY - b.y;
+                    }
+                }
+            });
+
+            if (allFinished) {
+                // Merge falling blocks back into actual grid
+                fallingBlocks.forEach(b => {
+                    grid[b.targetY][b.x] = b.type;
+                });
+                fallingBlocks = [];
+                isCascading = false;
+                triggerShake(15);
+                playSound('drop');
+            }
+        } else {
+            dropCounter += deltaTime;
+            if (dropCounter > dropInterval) playerDrop();
+        }
         draw();
     } else {
-        // Still need to draw if paused to show pause screen overlay or stationary grid
         draw();
     }
     requestAnimationFrame(update);
