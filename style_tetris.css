@@ -153,40 +153,113 @@ body {
 
 @media (max-width: 768px) {
     #gameWrapper {
-        height: -webkit-fill-available;
         height: 100vh;
+        height: 100dvh;
         border: none;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #top-controls {
+        padding: 4px 10px;
     }
 
     #gameLayout {
-        padding: 5px 2px;
+        display: grid;
+        grid-template-areas: 
+            "left right"
+            "canvas canvas";
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 1fr;
         align-items: center;
+        justify-items: center;
+        padding: 4px;
+        gap: 6px;
         flex: 1;
+        overflow: hidden;
     }
     
+    #sidePanelLeft { grid-area: left; }
+    #sidePanelRight { grid-area: right; }
+    #canvasContainer { 
+        grid-area: canvas;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Horizontal stats bar for mobile */
+    .side-panel {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        width: 100%;
+    }
+
+    #sidePanelLeft, #sidePanelRight {
+        width: 100%;
+    }
+
+    .stat-box {
+        padding: 4px 6px;
+        min-width: 60px;
+        border-left-width: 2px;
+    }
+    .stat-box .label { font-size: 0.6rem; margin-bottom: 2px; }
+    .stat-box #scoreDisplay, .stat-box #levelDisplay, .stat-box #linesDisplay { font-size: 0.9rem; }
+    
+    #nextCanvas {
+        width: 40px !important;
+        height: 40px !important;
+        margin-top: 0;
+    }
+
+    #canvasContainer {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        max-width: 100%;
+        width: fit-content;
+        margin: 0 auto;
+        border-width: 2px;
+        overflow: hidden;
+    }
+
+    #gameCanvas {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
+
     #mobileControls {
         display: flex;
         justify-content: space-around;
         align-items: center;
-        padding: 10px 10px 25px;
-        background: #111;
-        border-top: 2px solid #333;
+        padding: 10px 10px calc(15px + env(safe-area-inset-bottom));
+        background: rgba(10, 10, 12, 0.95);
+        border-top: 1px solid #333;
+        flex-shrink: 0;
     }
     
     #mobileControls button {
-        width: 60px; height: 60px;
+        width: 50px; height: 50px;
         background: #222; border: 2px solid var(--neon-blue);
         color: var(--neon-blue); border-radius: 50%;
-        font-size: 1rem; font-weight: bold;
+        font-size: 0.75rem; font-weight: bold;
     }
     
-    .m-group-left, .m-group-right { display: flex; gap: 20px; }
+    .m-group-left, .m-group-right { display: flex; gap: 15px; }
 
     #rotateBtn { border-color: var(--neon-purple); color: var(--neon-purple); }
     #hardDropBtn { border-color: var(--neon-pink); color: var(--neon-pink); }
     
-    .side-panel { display: none; } /* Hide side panels completely on mobile */
-    #canvasContainer { max-width: 90%; }
+    .mobile-hide { display: none !important; }
 }
 
 /* Effects */
