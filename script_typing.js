@@ -741,36 +741,6 @@ function triggerScreenShake() {
 // =================================
 //          GAME CONTROL
 // =================================
-function startGame() {
-    gameState = {
-        activeWords: [],
-        particles: [],
-        score: 0,
-        level: 1,
-        timeRemaining: 60,
-        wordsCleared: 0,
-        startTime: Date.now(),
-        isPlaying: true,
-        isGameOver: false,
-        lastFrameTime: Date.now(),
-        spawnTimer: 0,
-        spawnInterval: 2000,
-        difficultyMultiplier: 1.0,
-        targetWordIndex: -1,
-        levelScore: 0,
-        levelTarget: calculateLevelTarget(1) // Initial target
-    };
-    
-    document.getElementById('startScreen').classList.add('hidden');
-    document.getElementById('gameOverScreen').classList.add('hidden');
-    document.getElementById('leaderboardScreen').classList.add('hidden');
-    document.getElementById('hud').classList.remove('hidden');
-    
-    // Change back button text to "離開遊戲" when game starts
-    document.getElementById('backToMenuBtn').textContent = '← 離開遊戲';
-    
-    requestAnimationFrame(gameLoop);
-}
 
 function handleBackClick() {
     // If in game, game over, or in practice/leaderboard sub-screens
