@@ -2,8 +2,11 @@
 //          AUDIO SYSTEM (Basic)
 // =================================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let isSFXMuted = true;
+let isMusicEnabled = false;
 
 function playSound(type) {
+    if (isSFXMuted) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     
     const osc = audioCtx.createOscillator();
@@ -428,18 +431,19 @@ if (mobileInput) {
 // =================================
 const bgm = document.getElementById('bgm');
 const bgmBtn = document.getElementById('bgmBtn');
-let isMusicPlaying = false;
 
 function toggleMusic() {
     if (bgm.paused) {
         bgm.play().then(() => {
-            isMusicPlaying = true;
+            isMusicEnabled = true;
+            isSFXMuted = false;
             bgmBtn.textContent = '🔊';
             bgmBtn.style.opacity = '1';
         }).catch(e => console.log("Audio play failed:", e));
     } else {
         bgm.pause();
-        isMusicPlaying = false;
+        isMusicEnabled = false;
+        isSFXMuted = true;
         bgmBtn.textContent = '🔇';
         bgmBtn.style.opacity = '0.5';
     }
@@ -447,9 +451,7 @@ function toggleMusic() {
 
 // Try to play on first user interaction (browser policy)
 function initAudio() {
-    // Only try if we haven't started yet and user wants music (default off or waiting for interaction)
-    // Actually, let's just enable the button to work.
-    // If we want auto-play, we can try, but it's better to let user toggle or start on "Start Game"
+    // Audio is default off per user request
 }
 
 bgmBtn.addEventListener('click', (e) => {
@@ -457,16 +459,38 @@ bgmBtn.addEventListener('click', (e) => {
     toggleMusic();
 });
 
-// Start music when game starts if not already playing?
-// Let's hook into startGame
-const originalStartGame = startGame;
-startGame = function() {
-    if (bgm.paused && !isMusicPlaying) {
-        // First start, try to play
-        toggleMusic();
-    }
-    originalStartGame();
-};
+// Start music when game starts if user previously enabled it?
+// For now, keep it strictly manual as requested.
+function startGame() {
+    gameState = {
+        activeWords: [],
+        particles: [],
+        score: 0,
+        level: 1,
+        timeRemaining: 60,
+        wordsCleared: 0,
+        startTime: Date.now(),
+        isPlaying: true,
+        isGameOver: false,
+        lastFrameTime: Date.now(),
+        spawnTimer: 0,
+        spawnInterval: 2000,
+        difficultyMultiplier: 1.0,
+        targetWordIndex: -1,
+        levelScore: 0,
+        levelTarget: calculateLevelTarget(1) // Initial target
+    };
+    
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('gameOverScreen').classList.add('hidden');
+    document.getElementById('leaderboardScreen').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    
+    // Change back button text to "離開遊戲" when game starts
+    document.getElementById('backToMenuBtn').textContent = '← 離開遊戲';
+    
+    requestAnimationFrame(gameLoop);
+}
 
 function processInputForWord(index, char) {
     const word = gameState.activeWords[index];
@@ -758,12 +782,10 @@ function handleBackClick() {
         gameState.isGameOver = false;
         
         // Stop Music
-        if (isMusicPlaying) {
+        if (isMusicEnabled) {
             bgm.pause();
-            isMusicPlaying = false;
-            bgmBtn.textContent = '🔊'; // Reset icon to "sound on" (ready to play) or "off"?
-            // Let's reset to "off" state visually if we paused it, or keep it consistent?
-            // Actually, if we stop it, we should reflect that.
+            isMusicEnabled = false;
+            isSFXMuted = true;
             bgmBtn.textContent = '🔇';
             bgmBtn.style.opacity = '0.5';
         }

@@ -258,23 +258,27 @@ function playerDrop() {
     if (collide(grid, player)) {
         player.pos.y--;
         merge(grid, player);
-        playerReset();
         gridSweep();
+        if (!isCascading) {
+            playerReset();
+        }
         updateStats();
     }
     dropCounter = 0;
 }
 
 function playerHardDrop() {
-    if (!gameStarted || paused || gameOver) return;
+    if (!gameStarted || paused || gameOver || isCascading) return;
     while (!collide(grid, player)) {
         player.pos.y++;
         score += 2;
     }
     player.pos.y--;
     merge(grid, player);
-    playerReset();
     gridSweep();
+    if (!isCascading) {
+        playerReset();
+    }
     updateStats();
     playSound('drop');
 }
@@ -324,6 +328,7 @@ function triggerShake(intensity = 10) {
 function gridSweep() {
     let rowCount = 1;
     let clearedAny = false;
+    let lowestClearedY = -1;
 
     // First pass: identify and remove full rows
     for (let y = ROWS - 1; y >= 0; --y) {
@@ -334,6 +339,7 @@ function gridSweep() {
                 createParticles(x * BLOCK_SIZE, y * BLOCK_SIZE, color);
             });
 
+            lowestClearedY = Math.max(lowestClearedY, y);
             grid.splice(y, 1);
             grid.unshift(Array(COLS).fill(0));
             y++; // Check the new row at this position
@@ -354,14 +360,14 @@ function gridSweep() {
     // CASCADE ANIMATION PREP
     if (clearedAny) {
         fallingBlocks = [];
-        // Scan grid from bottom up to find blocks with air beneath
+        // Scan grid from bottom up, but ONLY blocks that were above or at the lowest cleared row
         for (let x = 0; x < COLS; x++) {
             let emptySpacesBelow = 0;
             for (let y = ROWS - 1; y >= 0; y--) {
                 if (grid[y][x] === 0) {
                     emptySpacesBelow++;
-                } else if (emptySpacesBelow > 0) {
-                    // This block needs to fall
+                } else if (emptySpacesBelow > 0 && y <= lowestClearedY) {
+                    // This block was at/above the cleared lines and has air beneath it
                     fallingBlocks.push({
                         x: x,
                         y: y,
@@ -378,6 +384,9 @@ function gridSweep() {
             isCascading = true;
         } else {
             triggerShake(15);
+            // No cascade but lines cleared, do a recursive check just in case
+            gridSweep();
+            if (!isCascading) playerReset();
         }
     }
 }
@@ -569,6 +578,13 @@ function update(time = 0) {
                 isCascading = false;
                 triggerShake(15);
                 playSound('drop');
+                
+                // RECURSIVE CHECK: If dropping formed new lines, clear them immediately
+                gridSweep();
+                // If the new check didn't start a cascade, board is stable
+                if (!isCascading) {
+                    playerReset();
+                }
             }
         } else {
             dropCounter += deltaTime;
