@@ -9,7 +9,8 @@ const BLOCK_SIZE = 32;
 
 const COLORS = {
     I: '#00f2ff', J: '#0077ff', L: '#ffaa00',
-    O: '#ffff00', S: '#00ff00', T: '#bf00ff', Z: '#ff0000'
+    O: '#ffff00', S: '#00ff00', T: '#bf00ff', Z: '#ff0000',
+    GHOST: '#aaaaaa'
 };
 
 const EMOJIS = {
@@ -264,21 +265,27 @@ function triggerShake(intensity = 10) {
 function gridSweep() {
     let rowCount = 1;
     let clearedAny = false;
+    let clearedLinesCount = 0;
+
+    // First pass: identify and remove full rows
     for (let y = ROWS - 1; y >= 0; --y) {
         if (grid[y].every(value => value !== 0)) {
-            // Create particles for each block in the line before removing
+            // Create particles
             grid[y].forEach((type, x) => {
                 const color = COLORS[type] || '#fff';
                 createParticles(x * BLOCK_SIZE, y * BLOCK_SIZE, color);
             });
 
-            const row = grid.splice(y, 1)[0].fill(0);
-            grid.unshift(row);
-            y++;
+            grid.splice(y, 1);
+            grid.unshift(Array(COLS).fill(0));
+            y++; // Check the new row at this position
+            
+            clearedLinesCount++;
+            clearedAny = true;
             score += rowCount * 100;
             rowCount *= 2;
             lines++;
-            clearedAny = true;
+            
             if (lines % 10 === 0) {
                 level++;
                 dropInterval = Math.max(100, 1000 - (level - 1) * 100);
@@ -286,7 +293,26 @@ function gridSweep() {
             playSound('clear');
         }
     }
-    if (clearedAny) triggerShake(15);
+
+    // Second pass: CASCADE GRAVITY (Avalanche)
+    // If lines were cleared, we let blocks fall independently into gaps
+    if (clearedAny) {
+        for (let x = 0; x < COLS; x++) {
+            let columnBlocks = [];
+            // Extract all blocks from this column
+            for (let y = 0; y < ROWS; y++) {
+                if (grid[y][x] !== 0) {
+                    columnBlocks.push(grid[y][x]);
+                    grid[y][x] = 0; // Clear it
+                }
+            }
+            // Put them back from the bottom up
+            for (let i = 0; i < columnBlocks.length; i++) {
+                grid[ROWS - 1 - i][x] = columnBlocks[columnBlocks.length - 1 - i];
+            }
+        }
+        triggerShake(15);
+    }
 }
 
 function updateStats() {
@@ -389,8 +415,8 @@ function drawGhost() {
     while (!collide(grid, ghost)) ghost.pos.y++;
     ghost.pos.y--;
     ctx.save();
-    ctx.globalAlpha = 0.2; // Decreased for less visual pressure
-    drawMatrix(ghost.shape, ghost.pos, player.type);
+    ctx.globalAlpha = 0.15; // Decreased for very faint hint
+    drawMatrix(ghost.shape, ghost.pos, 'GHOST');
     ctx.restore();
 }
 
