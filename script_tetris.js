@@ -128,10 +128,16 @@ function startGame() {
     updateStats();
 }
 
-function playerReset() {
+function playerReset(generateNewNext = true) {
     const types = 'IJLOSTZ';
+    
+    // Use the already shown 'next' piece as the current piece
     player.type = player.next || types[Math.floor(Math.random() * types.length)];
-    player.next = types[Math.floor(Math.random() * types.length)];
+    
+    // Only generate a NEW 'next' piece if specifically requested
+    if (generateNewNext) {
+        player.next = types[Math.floor(Math.random() * types.length)];
+    }
     
     // Deep copy the shape to avoid mutating SHAPES constant
     player.shape = SHAPES[player.type].map(row => [...row]);
@@ -260,7 +266,7 @@ function playerDrop() {
         merge(grid, player);
         gridSweep();
         if (!isCascading) {
-            playerReset();
+            playerReset(true); // Piece landed, no cascade: New Next piece
         }
         updateStats();
     }
@@ -277,7 +283,7 @@ function playerHardDrop() {
     merge(grid, player);
     gridSweep();
     if (!isCascading) {
-        playerReset();
+        playerReset(true); // Piece landed, no cascade: New Next piece
     }
     updateStats();
     playSound('drop');
@@ -386,7 +392,7 @@ function gridSweep() {
             triggerShake(15);
             // No cascade but lines cleared, do a recursive check just in case
             gridSweep();
-            if (!isCascading) playerReset();
+            if (!isCascading) playerReset(false); // Finished clearing/cascading: Use the piece that was ALREADY 'Next'
         }
     }
 }
@@ -554,7 +560,7 @@ function update(time = 0) {
                 gridSweep();
                 // If the new check didn't start a cascade, board is stable
                 if (!isCascading) {
-                    playerReset();
+                    playerReset(false); // Cascade finished, new piece spawns using the ALREADY shown Next piece
                 }
             }
         } else {
