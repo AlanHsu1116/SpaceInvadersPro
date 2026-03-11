@@ -366,20 +366,21 @@ function gridSweep() {
     // CASCADE ANIMATION PREP
     if (clearedAny) {
         fallingBlocks = [];
-        // Scan grid from bottom up, but ONLY blocks that were above or at the lowest cleared row
+        // Scan grid from bottom up
         for (let x = 0; x < COLS; x++) {
             let emptySpacesBelow = 0;
             for (let y = ROWS - 1; y >= 0; y--) {
                 if (grid[y][x] === 0) {
                     emptySpacesBelow++;
                 } else if (emptySpacesBelow > 0 && y <= lowestClearedY) {
-                    // This block was at/above the cleared lines and has air beneath it
+                    // Staggered delay based on column (x)
                     fallingBlocks.push({
                         x: x,
                         y: y,
                         targetY: y + emptySpacesBelow,
                         type: grid[y][x],
-                        currentYOffset: 0
+                        currentYOffset: 0,
+                        delay: x * 80 // 80ms delay per column for a clear "wave" effect
                     });
                     grid[y][x] = 0; // Temporarily remove from grid
                 }
@@ -536,12 +537,17 @@ function update(time = 0) {
         if (isCascading) {
             let allFinished = true;
             fallingBlocks.forEach(b => {
-                const speed = 0.3; // rows per frame
-                if (b.y + b.currentYOffset < b.targetY) {
-                    b.currentYOffset += speed;
+                if (b.delay > 0) {
+                    b.delay -= deltaTime;
                     allFinished = false;
-                    if (b.y + b.currentYOffset > b.targetY) {
-                        b.currentYOffset = b.targetY - b.y;
+                } else {
+                    const speed = 0.15; // Slower, more obvious fall
+                    if (b.y + b.currentYOffset < b.targetY) {
+                        b.currentYOffset += speed;
+                        allFinished = false;
+                        if (b.y + b.currentYOffset > b.targetY) {
+                            b.currentYOffset = b.targetY - b.y;
+                        }
                     }
                 }
             });
@@ -553,7 +559,7 @@ function update(time = 0) {
                 });
                 fallingBlocks = [];
                 isCascading = false;
-                triggerShake(15);
+                triggerShake(20); // Stronger shake
                 playSound('drop');
                 
                 // RECURSIVE CHECK: If dropping formed new lines, clear them immediately
