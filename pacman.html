@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小精靈 PRO - Pac-Man PRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_pacman.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>PAC-MAN <span class="pro-tag">PRO</span></h1>
+            <div class="stats">
+                <div class="stat-box">分數: <span id="score">0</span></div>
+                <div class="stat-box">等級: <span id="level">1</span></div>
+                <div class="stat-box">生命: <span id="lives">3</span></div>
+            </div>
+        </header>
+
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+            <div id="overlay" class="overlay">
+                <div class="content">
+                    <h2 id="overlay-title">小精靈 PRO</h2>
+                    <p id="overlay-text">點擊螢幕或按空格鍵開始</p>
+                    <button id="start-btn">開始遊戲</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>使用方向鍵控制 • 避開鬼魂！</p>
+            <a href="index.html" class="back-link">返回首頁</a>
+        </footer>
+    </div>
+    <script src="script_pacman.js"></script>
+</body>
+</html>
