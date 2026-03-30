@@ -67,24 +67,27 @@ class Entity {
 
     canMove(dx, dy) {
         if (dx === 0 && dy === 0) return true;
-        const col = Math.floor(this.x / TILE_SIZE);
-        const row = Math.floor(this.y / TILE_SIZE);
-        const nextCol = col + dx;
-        const nextRow = row + dy;
-        if (nextCol < 0 || nextCol >= COLS) return true;
-        if (nextRow < 0 || nextRow >= ROWS) return false;
-        return map[nextRow][nextCol] !== 1;
+        const col = Math.floor((this.x + dx * (TILE_SIZE / 2 + 1)) / TILE_SIZE);
+        const row = Math.floor((this.y + dy * (TILE_SIZE / 2 + 1)) / TILE_SIZE);
+        if (col < 0 || col >= COLS) return true; // 傳送門區域
+        if (row < 0 || row >= ROWS) return false;
+        return map[row][col] !== 1;
     }
 
     move() {
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-        const threshold = 5; // 加大緩衝至 5 像素，適應慢速移動
 
+        // 轉向邏輯
         if (this.nextDir.x !== 0 || this.nextDir.y !== 0) {
             const isReverse = (this.nextDir.x === -this.dir.x && this.nextDir.x !== 0) || 
                              (this.nextDir.y === -this.dir.y && this.nextDir.y !== 0);
-            if (isReverse || (Math.abs(this.x - centerX) <= threshold && Math.abs(this.y - centerY) <= threshold)) {
+            
+            // 隨時允許回頭，否則需接近中心點且「方向不同」才執行吸附轉向
+            const isDifferentDir = this.nextDir.x !== this.dir.x || this.nextDir.y !== this.dir.y;
+            const nearCenter = Math.abs(this.x - centerX) <= this.speed && Math.abs(this.y - centerY) <= this.speed;
+
+            if (isReverse || (isDifferentDir && nearCenter)) {
                 if (this.canMove(this.nextDir.x, this.nextDir.y)) {
                     this.dir = { ...this.nextDir };
                     if (!isReverse) {
@@ -98,9 +101,11 @@ class Entity {
         if (this.canMove(this.dir.x, this.dir.y)) {
             this.x += this.dir.x * this.speed;
             this.y += this.dir.y * this.speed;
+            
             if (this.x < 0) this.x = canvas.width;
             if (this.x > canvas.width) this.x = 0;
         } else {
+            // 撞牆才吸附到中心點
             this.x = centerX;
             this.y = centerY;
         }
@@ -109,9 +114,9 @@ class Entity {
 
 class Pacman extends Entity {
     constructor(x, y) {
-        super(x, y, 0.8); // 速度調慢至 0.8
+        super(x, y, 1); // 速度設為 1，這是最穩定且節奏適中的數值
         this.mouthOpen = 0;
-        this.mouthSpeed = 0.08;
+        this.mouthSpeed = 0.1;
     }
 
     draw() {
@@ -138,7 +143,7 @@ class Pacman extends Entity {
 
 class Ghost extends Entity {
     constructor(x, y, color) {
-        super(x, y, 0.6); // 鬼魂調慢至 0.6
+        super(x, y, 0.8); // 鬼魂稍微慢一點
         this.color = color;
         this.scared = false;
     }
@@ -156,6 +161,7 @@ class Ghost extends Entity {
     update() {
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+        
         if (Math.abs(this.x - centerX) < this.speed && Math.abs(this.y - centerY) < this.speed) {
             if (!this.canMove(this.dir.x, this.dir.y) || Math.random() < 0.2) {
                 this.pickNewDirection();
