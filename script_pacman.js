@@ -8,7 +8,7 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayText = document.getElementById('overlay-text');
 const startBtn = document.getElementById('start-btn');
 
-// 遊戲配置
+// 遊戲配置 - 使用整數倍率確保移動精確
 const TILE_SIZE = 20;
 const ROWS = 21;
 const COLS = 19;
@@ -33,14 +33,14 @@ const originalMap = [
     [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
     [1,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,1],
     [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
-    [1,1,1,1,0,1,2,1,1,4,1,1,2,1,0,1,1,1,1],
+    [1,1,1,1,0,1,2,1,1,2,1,1,2,1,0,1,1,1,1],
     [2,2,2,2,0,2,2,1,2,2,2,1,2,2,0,2,2,2,2],
     [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
     [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
     [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
     [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
-    [1,3,0,1,0,0,0,0,0,5,0,0,0,0,0,1,0,3,1],
+    [1,3,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,3,1],
     [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
     [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
     [1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
@@ -50,15 +50,13 @@ const originalMap = [
 
 let map = [];
 
-// 角色對象
 class Entity {
     constructor(x, y, speed) {
         this.startX = x;
         this.startY = y;
-        this.reset();
-        this.baseSpeed = speed;
         this.speed = speed;
         this.radius = TILE_SIZE / 2 - 2;
+        this.reset();
     }
 
     reset() {
@@ -68,43 +66,35 @@ class Entity {
         this.nextDir = { x: 0, y: 0 };
     }
 
-    getMapPos() {
-        return {
-            col: Math.floor(this.x / TILE_SIZE),
-            row: Math.floor(this.y / TILE_SIZE)
-        };
-    }
-
     canMove(dx, dy) {
-        // 預測移動後的中心點是否會撞牆
-        const margin = 2;
-        const nextX = this.x + dx * (TILE_SIZE / 2 + margin);
-        const nextY = this.y + dy * (TILE_SIZE / 2 + margin);
+        if (dx === 0 && dy === 0) return true;
         
-        const nextCol = Math.floor(nextX / TILE_SIZE);
-        const nextRow = Math.floor(nextY / TILE_SIZE);
+        // 取得目前的中心座標
+        const col = Math.floor(this.x / TILE_SIZE);
+        const row = Math.floor(this.y / TILE_SIZE);
         
-        // 邊界檢查
+        // 預測下一個位置的格子
+        const nextCol = col + dx;
+        const nextRow = row + dy;
+        
+        // 傳送門檢查
         if (nextCol < 0 || nextCol >= COLS) return true;
         if (nextRow < 0 || nextRow >= ROWS) return false;
 
-        const tile = map[nextRow][nextCol];
-        return tile !== 1;
+        return map[nextRow][nextCol] !== 1;
     }
 
     move() {
-        // 容錯判定中心點 (更寬鬆的 4 像素範圍)
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-        const onCenter = Math.abs(this.x - centerX) <= this.speed && Math.abs(this.y - centerY) <= this.speed;
 
-        // 嘗試轉向
+        // 轉向邏輯：在接近中心點時嘗試轉向
         if (this.nextDir.x !== 0 || this.nextDir.y !== 0) {
-            // 如果是 180 度大轉彎，隨時可以轉
             const isReverse = (this.nextDir.x === -this.dir.x && this.nextDir.x !== 0) || 
                              (this.nextDir.y === -this.dir.y && this.nextDir.y !== 0);
-            
-            if (isReverse || onCenter) {
+
+            // 180度回轉隨時可以轉，否則必須在中心點附近
+            if (isReverse || (Math.abs(this.x - centerX) < this.speed && Math.abs(this.y - centerY) < this.speed)) {
                 if (this.canMove(this.nextDir.x, this.nextDir.y)) {
                     this.dir = { ...this.nextDir };
                     if (!isReverse) {
@@ -115,15 +105,16 @@ class Entity {
             }
         }
 
+        // 移動邏輯
         if (this.canMove(this.dir.x, this.dir.y)) {
             this.x += this.dir.x * this.speed;
             this.y += this.dir.y * this.speed;
 
             // 邊界傳送
-            if (this.x < -TILE_SIZE/2) this.x = canvas.width + TILE_SIZE/2;
-            if (this.x > canvas.width + TILE_SIZE/2) this.x = -TILE_SIZE/2;
+            if (this.x < 0) this.x = canvas.width;
+            if (this.x > canvas.width) this.x = 0;
         } else {
-            // 撞牆時對齊中心
+            // 撞牆對齊
             this.x = centerX;
             this.y = centerY;
         }
@@ -143,7 +134,6 @@ class Pacman extends Entity {
 
         ctx.save();
         ctx.translate(this.x, this.y);
-        
         let angle = 0;
         if (this.dir.x === 1) angle = 0;
         else if (this.dir.x === -1) angle = Math.PI;
@@ -164,35 +154,32 @@ class Pacman extends Entity {
 
 class Ghost extends Entity {
     constructor(x, y, color) {
-        super(x, y, 1.5);
+        super(x, y, 2); // 速度調為 2 與玩家一致
         this.color = color;
         this.scared = false;
-        this.randomDir();
+        this.pickNewDirection();
     }
 
-    randomDir() {
+    pickNewDirection() {
         const dirs = [{x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1}];
-        // 過濾掉反方向，除非沒路走
-        const available = dirs.filter(d => 
-            (d.x !== -this.dir.x || d.y !== -this.dir.y) && this.canMove(d.x, d.y)
-        );
+        const available = dirs.filter(d => this.canMove(d.x, d.y) && (d.x !== -this.dir.x || d.y !== -this.dir.y));
         
         if (available.length > 0) {
             this.nextDir = available[Math.floor(Math.random() * available.length)];
         } else {
-            this.nextDir = dirs[Math.floor(Math.random() * dirs.length)];
+            // 沒路走時才考慮回頭
+            this.nextDir = dirs.find(d => this.canMove(d.x, d.y)) || {x:0, y:0};
         }
     }
 
     update() {
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-        const onCenter = Math.abs(this.x - centerX) <= this.speed && Math.abs(this.y - centerY) <= this.speed;
 
-        if (onCenter) {
-            // 在十字路口或撞牆時換方向
+        // 到達中心點時決定是否轉向
+        if (Math.abs(this.x - centerX) < this.speed && Math.abs(this.y - centerY) < this.speed) {
             if (!this.canMove(this.dir.x, this.dir.y) || Math.random() < 0.3) {
-                this.randomDir();
+                this.pickNewDirection();
             }
         }
         this.move();
@@ -205,12 +192,10 @@ class Ghost extends Entity {
         ctx.fillStyle = this.scared ? "#0000ff" : this.color;
         ctx.shadowBlur = 10;
         ctx.shadowColor = this.scared ? "#0000ff" : this.color;
-        
         ctx.arc(0, -2, this.radius, Math.PI, 0);
         ctx.lineTo(this.radius, this.radius);
         ctx.lineTo(-this.radius, this.radius);
         ctx.fill();
-        
         ctx.fillStyle = "#fff";
         ctx.beginPath();
         ctx.arc(-3, -3, 2, 0, Math.PI * 2);
@@ -220,7 +205,7 @@ class Ghost extends Entity {
     }
 }
 
-let pacman;
+let pacman = new Pacman(9, 15);
 let ghosts = [];
 
 function initGame() {
@@ -233,26 +218,23 @@ function initGame() {
     levelElement.textContent = level;
     livesElement.textContent = lives;
     
+    // 計算總豆子數
+    for(let r=0; r<ROWS; r++) {
+        for(let c=0; c<COLS; c++) {
+            if(map[r][c] === 0 || map[r][c] === 3) pelletsLeft++;
+        }
+    }
     resetEntities();
 }
 
 function resetEntities() {
-    ghosts = [];
-    const colors = ["#ff0000", "#ffb8ff", "#00ffff", "#ffb852"];
-    let ghostIdx = 0;
-
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            if (map[r][c] === 5) {
-                if (!pacman) pacman = new Pacman(c, r);
-                else pacman.reset();
-            }
-            if (map[r][c] === 4) {
-                ghosts.push(new Ghost(c, r, colors[ghostIdx++ % colors.length]));
-            }
-            if (map[r][c] === 0 || map[r][c] === 3) pelletsLeft++;
-        }
-    }
+    pacman.reset();
+    ghosts = [
+        new Ghost(9, 8, "#ff0000"),
+        new Ghost(8, 9, "#ffb8ff"),
+        new Ghost(9, 9, "#00ffff"),
+        new Ghost(10, 9, "#ffb852")
+    ];
 }
 
 function update() {
@@ -260,14 +242,17 @@ function update() {
 
     pacman.move();
     
-    const pos = pacman.getMapPos();
-    if (map[pos.row][pos.col] === 0) {
-        map[pos.row][pos.col] = 2;
+    // 吃豆子
+    const col = Math.floor(this.pacman.x / TILE_SIZE);
+    const row = Math.floor(this.pacman.y / TILE_SIZE);
+    
+    if (map[row][col] === 0) {
+        map[row][col] = 2;
         score += 10;
         pelletsLeft--;
         scoreElement.textContent = score;
-    } else if (map[pos.row][pos.col] === 3) {
-        map[pos.row][pos.col] = 2;
+    } else if (map[row][col] === 3) {
+        map[row][col] = 2;
         score += 50;
         pelletsLeft--;
         scoreElement.textContent = score;
@@ -276,26 +261,22 @@ function update() {
 
     ghosts.forEach(ghost => {
         ghost.update();
-        
         const dx = pacman.x - ghost.x;
         const dy = pacman.y - ghost.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        
-        if (dist < TILE_SIZE * 0.8) {
+        if (Math.sqrt(dx*dx + dy*dy) < TILE_SIZE * 0.8) {
             if (ghost.scared) {
                 score += 200;
                 scoreElement.textContent = score;
                 ghost.reset();
                 ghost.scared = false;
+                ghost.pickNewDirection();
             } else {
                 handleDeath();
             }
         }
     });
 
-    if (pelletsLeft === 0) {
-        handleWin();
-    }
+    if (pelletsLeft === 0) handleWin();
 }
 
 function activatePowerMode() {
@@ -316,8 +297,7 @@ function handleDeath() {
         showOverlay("遊戲結束", `最終得分: ${score}`);
     } else {
         setTimeout(() => {
-            pacman.reset();
-            ghosts.forEach(g => g.reset());
+            resetEntities();
             gameActive = true;
         }, 1000);
     }
@@ -338,7 +318,6 @@ function draw() {
         for (let c = 0; c < COLS; c++) {
             const x = c * TILE_SIZE;
             const y = r * TILE_SIZE;
-            
             if (map[r][c] === 1) {
                 ctx.fillStyle = "#1a1a3a";
                 ctx.strokeStyle = "#4d4dff";
@@ -360,7 +339,6 @@ function draw() {
             }
         }
     }
-
     pacman.draw();
     ghosts.forEach(g => g.draw());
 }
@@ -378,9 +356,7 @@ function showOverlay(title, text) {
 }
 
 startBtn.addEventListener('click', () => {
-    if (lives <= 0 || pelletsLeft === 0) {
-        initGame();
-    }
+    if (lives <= 0 || pelletsLeft === 0) initGame();
     overlay.style.display = "none";
     gameActive = true;
 });
@@ -391,9 +367,7 @@ window.addEventListener('keydown', (e) => {
         case 'ArrowDown': pacman.nextDir = { x: 0, y: 1 }; break;
         case 'ArrowLeft': pacman.nextDir = { x: -1, y: 0 }; break;
         case 'ArrowRight': pacman.nextDir = { x: 1, y: 0 }; break;
-        case ' ': 
-            if (!gameActive) startBtn.click();
-            break;
+        case ' ': if (!gameActive) startBtn.click(); break;
     }
 });
 
