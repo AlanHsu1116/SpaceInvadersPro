@@ -8,7 +8,7 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayText = document.getElementById('overlay-text');
 const startBtn = document.getElementById('start-btn');
 
-// 遊戲配置 - 使用整數倍率確保移動精確
+// 遊戲配置
 const TILE_SIZE = 20;
 const ROWS = 21;
 const COLS = 19;
@@ -68,19 +68,12 @@ class Entity {
 
     canMove(dx, dy) {
         if (dx === 0 && dy === 0) return true;
-        
-        // 取得目前的中心座標
         const col = Math.floor(this.x / TILE_SIZE);
         const row = Math.floor(this.y / TILE_SIZE);
-        
-        // 預測下一個位置的格子
         const nextCol = col + dx;
         const nextRow = row + dy;
-        
-        // 傳送門檢查
         if (nextCol < 0 || nextCol >= COLS) return true;
         if (nextRow < 0 || nextRow >= ROWS) return false;
-
         return map[nextRow][nextCol] !== 1;
     }
 
@@ -88,12 +81,9 @@ class Entity {
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
 
-        // 轉向邏輯：在接近中心點時嘗試轉向
         if (this.nextDir.x !== 0 || this.nextDir.y !== 0) {
             const isReverse = (this.nextDir.x === -this.dir.x && this.nextDir.x !== 0) || 
                              (this.nextDir.y === -this.dir.y && this.nextDir.y !== 0);
-
-            // 180度回轉隨時可以轉，否則必須在中心點附近
             if (isReverse || (Math.abs(this.x - centerX) < this.speed && Math.abs(this.y - centerY) < this.speed)) {
                 if (this.canMove(this.nextDir.x, this.nextDir.y)) {
                     this.dir = { ...this.nextDir };
@@ -105,16 +95,12 @@ class Entity {
             }
         }
 
-        // 移動邏輯
         if (this.canMove(this.dir.x, this.dir.y)) {
             this.x += this.dir.x * this.speed;
             this.y += this.dir.y * this.speed;
-
-            // 邊界傳送
             if (this.x < 0) this.x = canvas.width;
             if (this.x > canvas.width) this.x = 0;
         } else {
-            // 撞牆對齊
             this.x = centerX;
             this.y = centerY;
         }
@@ -131,7 +117,6 @@ class Pacman extends Entity {
     draw() {
         this.mouthOpen += this.mouthSpeed;
         if (this.mouthOpen > 0.2 || this.mouthOpen < 0) this.mouthSpeed *= -1;
-
         ctx.save();
         ctx.translate(this.x, this.y);
         let angle = 0;
@@ -140,7 +125,6 @@ class Pacman extends Entity {
         else if (this.dir.y === 1) angle = Math.PI / 2;
         else if (this.dir.y === -1) angle = -Math.PI / 2;
         ctx.rotate(angle);
-
         ctx.beginPath();
         ctx.fillStyle = "#ffff00";
         ctx.shadowBlur = 10;
@@ -154,31 +138,26 @@ class Pacman extends Entity {
 
 class Ghost extends Entity {
     constructor(x, y, color) {
-        super(x, y, 2); // 速度調為 2 與玩家一致
+        super(x, y, 2);
         this.color = color;
         this.scared = false;
-        this.pickNewDirection();
     }
 
     pickNewDirection() {
         const dirs = [{x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1}];
         const available = dirs.filter(d => this.canMove(d.x, d.y) && (d.x !== -this.dir.x || d.y !== -this.dir.y));
-        
         if (available.length > 0) {
-            this.nextDir = available[Math.floor(Math.random() * available.length)];
+            this.dir = available[Math.floor(Math.random() * available.length)];
         } else {
-            // 沒路走時才考慮回頭
-            this.nextDir = dirs.find(d => this.canMove(d.x, d.y)) || {x:0, y:0};
+            this.dir = dirs.find(d => this.canMove(d.x, d.y)) || {x:0, y:0};
         }
     }
 
     update() {
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-
-        // 到達中心點時決定是否轉向
         if (Math.abs(this.x - centerX) < this.speed && Math.abs(this.y - centerY) < this.speed) {
-            if (!this.canMove(this.dir.x, this.dir.y) || Math.random() < 0.3) {
+            if (!this.canMove(this.dir.x, this.dir.y) || Math.random() < 0.2) {
                 this.pickNewDirection();
             }
         }
@@ -217,8 +196,6 @@ function initGame() {
     scoreElement.textContent = score;
     levelElement.textContent = level;
     livesElement.textContent = lives;
-    
-    // 計算總豆子數
     for(let r=0; r<ROWS; r++) {
         for(let c=0; c<COLS; c++) {
             if(map[r][c] === 0 || map[r][c] === 3) pelletsLeft++;
@@ -235,16 +212,15 @@ function resetEntities() {
         new Ghost(9, 9, "#00ffff"),
         new Ghost(10, 9, "#ffb852")
     ];
+    ghosts.forEach(g => g.pickNewDirection());
 }
 
 function update() {
     if (!gameActive) return;
-
     pacman.move();
     
-    // 吃豆子
-    const col = Math.floor(this.pacman.x / TILE_SIZE);
-    const row = Math.floor(this.pacman.y / TILE_SIZE);
+    const col = Math.floor(pacman.x / TILE_SIZE);
+    const row = Math.floor(pacman.y / TILE_SIZE);
     
     if (map[row][col] === 0) {
         map[row][col] = 2;
@@ -275,7 +251,6 @@ function update() {
             }
         }
     });
-
     if (pelletsLeft === 0) handleWin();
 }
 
@@ -313,7 +288,6 @@ function handleWin() {
 function draw() {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
             const x = c * TILE_SIZE;
