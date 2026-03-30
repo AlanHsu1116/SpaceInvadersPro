@@ -69,7 +69,7 @@ class Entity {
         if (dx === 0 && dy === 0) return true;
         const col = Math.floor((this.x + dx * (TILE_SIZE / 2 + 1)) / TILE_SIZE);
         const row = Math.floor((this.y + dy * (TILE_SIZE / 2 + 1)) / TILE_SIZE);
-        if (col < 0 || col >= COLS) return true; // 傳送門區域
+        if (col < 0 || col >= COLS) return true;
         if (row < 0 || row >= ROWS) return false;
         return map[row][col] !== 1;
     }
@@ -78,12 +78,10 @@ class Entity {
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
 
-        // 轉向邏輯
         if (this.nextDir.x !== 0 || this.nextDir.y !== 0) {
             const isReverse = (this.nextDir.x === -this.dir.x && this.nextDir.x !== 0) || 
                              (this.nextDir.y === -this.dir.y && this.nextDir.y !== 0);
             
-            // 隨時允許回頭，否則需接近中心點且「方向不同」才執行吸附轉向
             const isDifferentDir = this.nextDir.x !== this.dir.x || this.nextDir.y !== this.dir.y;
             const nearCenter = Math.abs(this.x - centerX) <= this.speed && Math.abs(this.y - centerY) <= this.speed;
 
@@ -101,11 +99,9 @@ class Entity {
         if (this.canMove(this.dir.x, this.dir.y)) {
             this.x += this.dir.x * this.speed;
             this.y += this.dir.y * this.speed;
-            
             if (this.x < 0) this.x = canvas.width;
             if (this.x > canvas.width) this.x = 0;
         } else {
-            // 撞牆才吸附到中心點
             this.x = centerX;
             this.y = centerY;
         }
@@ -114,7 +110,7 @@ class Entity {
 
 class Pacman extends Entity {
     constructor(x, y) {
-        super(x, y, 1); // 速度設為 1，這是最穩定且節奏適中的數值
+        super(x, y, 1);
         this.mouthOpen = 0;
         this.mouthSpeed = 0.1;
     }
@@ -143,7 +139,9 @@ class Pacman extends Entity {
 
 class Ghost extends Entity {
     constructor(x, y, color) {
-        super(x, y, 0.8); // 鬼魂稍微慢一點
+        // 等級越高，鬼魂速度越快 (每關增加 0.1)
+        const ghostSpeed = 0.7 + (level - 1) * 0.1;
+        super(x, y, Math.min(ghostSpeed, 1.2)); // 最高不超過 1.2
         this.color = color;
         this.scared = false;
     }
@@ -161,7 +159,6 @@ class Ghost extends Entity {
     update() {
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-        
         if (Math.abs(this.x - centerX) < this.speed && Math.abs(this.y - centerY) < this.speed) {
             if (!this.canMove(this.dir.x, this.dir.y) || Math.random() < 0.2) {
                 this.pickNewDirection();
@@ -193,15 +190,21 @@ class Ghost extends Entity {
 let pacman = new Pacman(9, 15);
 let ghosts = [];
 
+// 全新遊戲啟動 (Level 1)
 function initGame() {
-    map = originalMap.map(row => [...row]);
-    pelletsLeft = 0;
     score = 0;
     level = 1;
     lives = 3;
     scoreElement.textContent = score;
     levelElement.textContent = level;
     livesElement.textContent = lives;
+    loadLevel();
+}
+
+// 加載目前的關卡 (不重置分數與生命)
+function loadLevel() {
+    map = originalMap.map(row => [...row]);
+    pelletsLeft = 0;
     for(let r=0; r<ROWS; r++) {
         for(let c=0; c<COLS; c++) {
             if(map[r][c] === 0 || map[r][c] === 3) pelletsLeft++;
@@ -290,7 +293,7 @@ function handleWin() {
     gameActive = false;
     level++;
     levelElement.textContent = level;
-    showOverlay("下一關", "準備好迎接下一關嗎？");
+    showOverlay("下一關", "地圖已重置，準備迎接更快的鬼魂！");
 }
 
 function draw() {
@@ -338,7 +341,13 @@ function showOverlay(title, text) {
 }
 
 startBtn.addEventListener('click', () => {
-    if (lives <= 0 || pelletsLeft === 0) initGame();
+    if (lives <= 0) {
+        // 遊戲結束後的重開
+        initGame();
+    } else if (pelletsLeft === 0) {
+        // 過關後的下一關
+        loadLevel();
+    }
     overlay.style.display = "none";
     gameActive = true;
 });
