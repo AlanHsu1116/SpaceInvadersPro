@@ -8,7 +8,7 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayText = document.getElementById('overlay-text');
 const startBtn = document.getElementById('start-btn');
 
-// 遊戲配置 - TILE_SIZE 為 20，速度設為 1.25 (16步走完一格) 或 1 (20步)
+// 遊戲配置
 const TILE_SIZE = 20;
 const ROWS = 21;
 const COLS = 19;
@@ -23,7 +23,6 @@ let pelletsLeft = 0;
 let powerMode = false;
 let powerTimer = null;
 
-// 地圖定義
 const originalMap = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
@@ -70,11 +69,8 @@ class Entity {
         if (dx === 0 && dy === 0) return true;
         const col = Math.floor(this.x / TILE_SIZE);
         const row = Math.floor(this.y / TILE_SIZE);
-        
-        // 根據方向檢查下一格，稍微增加偏移量確保檢測準確
         const nextCol = col + dx;
         const nextRow = row + dy;
-        
         if (nextCol < 0 || nextCol >= COLS) return true;
         if (nextRow < 0 || nextRow >= ROWS) return false;
         return map[nextRow][nextCol] !== 1;
@@ -83,18 +79,14 @@ class Entity {
     move() {
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-
-        // 轉向緩衝判定：容錯範圍加大到 4 像素
-        const threshold = 4;
+        const threshold = 5; // 加大緩衝至 5 像素，適應慢速移動
 
         if (this.nextDir.x !== 0 || this.nextDir.y !== 0) {
             const isReverse = (this.nextDir.x === -this.dir.x && this.nextDir.x !== 0) || 
                              (this.nextDir.y === -this.dir.y && this.nextDir.y !== 0);
-            
             if (isReverse || (Math.abs(this.x - centerX) <= threshold && Math.abs(this.y - centerY) <= threshold)) {
                 if (this.canMove(this.nextDir.x, this.nextDir.y)) {
                     this.dir = { ...this.nextDir };
-                    // 轉向時自動吸附到中心點，避免座標偏移
                     if (!isReverse) {
                         this.x = centerX;
                         this.y = centerY;
@@ -106,12 +98,9 @@ class Entity {
         if (this.canMove(this.dir.x, this.dir.y)) {
             this.x += this.dir.x * this.speed;
             this.y += this.dir.y * this.speed;
-            
-            // 處理傳送門
             if (this.x < 0) this.x = canvas.width;
             if (this.x > canvas.width) this.x = 0;
         } else {
-            // 撞牆自動修正到格子中心
             this.x = centerX;
             this.y = centerY;
         }
@@ -120,9 +109,9 @@ class Entity {
 
 class Pacman extends Entity {
     constructor(x, y) {
-        super(x, y, 1.25); // 速度降至 1.25 (原本是 2)
+        super(x, y, 0.8); // 速度調慢至 0.8
         this.mouthOpen = 0;
-        this.mouthSpeed = 0.12;
+        this.mouthSpeed = 0.08;
     }
 
     draw() {
@@ -149,7 +138,7 @@ class Pacman extends Entity {
 
 class Ghost extends Entity {
     constructor(x, y, color) {
-        super(x, y, 1); // 鬼魂速度設為 1 (更慢一些)
+        super(x, y, 0.6); // 鬼魂調慢至 0.6
         this.color = color;
         this.scared = false;
     }
@@ -167,10 +156,8 @@ class Ghost extends Entity {
     update() {
         const centerX = Math.floor(this.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
         const centerY = Math.floor(this.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-        
-        // 鬼魂在中心點判定是否轉彎
         if (Math.abs(this.x - centerX) < this.speed && Math.abs(this.y - centerY) < this.speed) {
-            if (!this.canMove(this.dir.x, this.dir.y) || Math.random() < 0.25) {
+            if (!this.canMove(this.dir.x, this.dir.y) || Math.random() < 0.2) {
                 this.pickNewDirection();
             }
         }
@@ -232,7 +219,6 @@ function update() {
     if (!gameActive) return;
     pacman.move();
     
-    // 修正座標判定：使用角色中心點對應的格子
     const col = Math.floor(pacman.x / TILE_SIZE);
     const row = Math.floor(pacman.y / TILE_SIZE);
     
@@ -255,7 +241,7 @@ function update() {
         ghost.update();
         const dx = pacman.x - ghost.x;
         const dy = pacman.y - ghost.y;
-        if (Math.sqrt(dx*dx + dy*dy) < TILE_SIZE * 0.7) {
+        if (Math.sqrt(dx*dx + dy*dy) < TILE_SIZE * 0.75) {
             if (ghost.scared) {
                 score += 200;
                 scoreElement.textContent = score;
@@ -298,7 +284,7 @@ function handleWin() {
     gameActive = false;
     level++;
     levelElement.textContent = level;
-    showOverlay("下一關", "準備好迎接更快的挑戰了嗎？");
+    showOverlay("下一關", "準備好迎接下一關嗎？");
 }
 
 function draw() {
