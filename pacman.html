@@ -24,6 +24,17 @@
                 <div class="content">
                     <h2 id="overlay-title">小精靈 PRO</h2>
                     <p id="overlay-text">點擊螢幕或按空格鍵開始</p>
+                    
+                    <div id="name-input-container" class="hidden">
+                        <input type="text" id="player-name" maxlength="10" placeholder="輸入你的名字">
+                        <button id="save-score-btn">儲存紀錄</button>
+                    </div>
+
+                    <div id="leaderboard" class="leaderboard hidden">
+                        <h3>🏆 最高紀錄</h3>
+                        <ul id="high-scores-list"></ul>
+                    </div>
+
                     <button id="start-btn">開始遊戲</button>
                 </div>
             </div>

@@ -94,6 +94,75 @@ h1 {
     image-rendering: pixelated; /* 讓像素風格更清晰 */
 }
 
+.hidden {
+    display: none !important;
+}
+
+#name-input-container {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+#player-name {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--neon-blue);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    outline: none;
+    text-align: center;
+    width: 150px;
+}
+
+#save-score-btn {
+    padding: 8px 15px;
+    background: var(--neon-blue);
+    border: none;
+    color: black;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+}
+
+.leaderboard {
+    margin: 15px auto;
+    text-align: left;
+    width: 100%;
+    max-width: 280px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 15px;
+    border: 1px dashed var(--neon-blue);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+.leaderboard h3 {
+    text-align: center;
+    color: var(--neon-blue);
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.leaderboard ul {
+    list-style: none;
+    padding: 0;
+}
+
+.leaderboard li {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+}
+
+.leaderboard li span:first-child {
+    color: var(--neon-blue);
+}
+
 .overlay {
     position: absolute;
     top: 0;

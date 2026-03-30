@@ -7,6 +7,11 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayText = document.getElementById('overlay-text');
 const startBtn = document.getElementById('start-btn');
+const nameInputContainer = document.getElementById('name-input-container');
+const playerNameInput = document.getElementById('player-name');
+const saveScoreBtn = document.getElementById('save-score-btn');
+const leaderboardContainer = document.getElementById('leaderboard');
+const highScoresList = document.getElementById('high-scores-list');
 
 // 遊戲配置
 const TILE_SIZE = 20;
@@ -139,9 +144,8 @@ class Pacman extends Entity {
 
 class Ghost extends Entity {
     constructor(x, y, color) {
-        // 等級越高，鬼魂速度越快 (每關增加 0.1)
         const ghostSpeed = 0.7 + (level - 1) * 0.1;
-        super(x, y, Math.min(ghostSpeed, 1.2)); // 最高不超過 1.2
+        super(x, y, Math.min(ghostSpeed, 1.2));
         this.color = color;
         this.scared = false;
     }
@@ -190,7 +194,34 @@ class Ghost extends Entity {
 let pacman = new Pacman(9, 15);
 let ghosts = [];
 
-// 全新遊戲啟動 (Level 1)
+function updateLeaderboardUI() {
+    const highScores = JSON.parse(localStorage.getItem('pacman-high-scores')) || [];
+    highScoresList.innerHTML = highScores
+        .map(entry => `<li><span>${entry.name}</span> <span>${entry.score} 分 (Lv.${entry.level})</span></li>`)
+        .join('');
+    
+    if (highScores.length > 0) {
+        leaderboardContainer.classList.remove('hidden');
+    } else {
+        leaderboardContainer.classList.add('hidden');
+    }
+}
+
+function saveScore() {
+    const name = playerNameInput.value.trim() || '無名英雄';
+    const highScores = JSON.parse(localStorage.getItem('pacman-high-scores')) || [];
+    
+    highScores.push({ name, score, level });
+    highScores.sort((a, b) => b.score - a.score);
+    const topScores = highScores.slice(0, 5);
+    
+    localStorage.setItem('pacman-high-scores', JSON.stringify(topScores));
+    nameInputContainer.classList.add('hidden');
+    updateLeaderboardUI();
+}
+
+saveScoreBtn.addEventListener('click', saveScore);
+
 function initGame() {
     score = 0;
     level = 1;
@@ -201,7 +232,6 @@ function initGame() {
     loadLevel();
 }
 
-// 加載目前的關卡 (不重置分數與生命)
 function loadLevel() {
     map = originalMap.map(row => [...row]);
     pelletsLeft = 0;
@@ -280,7 +310,7 @@ function handleDeath() {
     livesElement.textContent = lives;
     gameActive = false;
     if (lives <= 0) {
-        showOverlay("遊戲結束", `最終得分: ${score}`);
+        showOverlay("遊戲結束", `最終得分: ${score}`, true);
     } else {
         setTimeout(() => {
             resetEntities();
@@ -293,7 +323,21 @@ function handleWin() {
     gameActive = false;
     level++;
     levelElement.textContent = level;
-    showOverlay("下一關", "地圖已重置，準備迎接更快的鬼魂！");
+    showOverlay("下一關", "地圖已重置，準備迎接更快的鬼魂！", false);
+}
+
+function showOverlay(title, text, showInput = false) {
+    overlayTitle.textContent = title;
+    overlayText.textContent = text;
+    overlay.style.display = "flex";
+    
+    if (showInput) {
+        nameInputContainer.classList.remove('hidden');
+    } else {
+        nameInputContainer.classList.add('hidden');
+    }
+    
+    updateLeaderboardUI();
 }
 
 function draw() {
@@ -334,18 +378,10 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-function showOverlay(title, text) {
-    overlayTitle.textContent = title;
-    overlayText.textContent = text;
-    overlay.style.display = "flex";
-}
-
 startBtn.addEventListener('click', () => {
     if (lives <= 0) {
-        // 遊戲結束後的重開
         initGame();
     } else if (pelletsLeft === 0) {
-        // 過關後的下一關
         loadLevel();
     }
     overlay.style.display = "none";
@@ -362,5 +398,6 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
+updateLeaderboardUI();
 initGame();
 gameLoop();
