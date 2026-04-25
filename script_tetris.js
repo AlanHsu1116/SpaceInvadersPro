@@ -3,9 +3,9 @@
  */
 
 // --- Configuration ---
-const COLS = 10;
-const ROWS = 24;
-const BLOCK_SIZE = 32;
+const COLS = 20;
+const ROWS = 40;
+const BLOCK_SIZE = 22;
 
 const COLORS = {
     I: '#00f2ff', J: '#0077ff', L: '#ffaa00',
