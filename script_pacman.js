@@ -398,6 +398,60 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
+function initMobileControls() {
+    // 1. D-Pad Controls
+    const btns = {
+        'up-btn': { x: 0, y: -1 },
+        'down-btn': { x: 0, y: 1 },
+        'left-btn': { x: -1, y: 0 },
+        'right-btn': { x: 1, y: 0 }
+    };
+
+    Object.entries(btns).forEach(([id, dir]) => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (gameActive) pacman.nextDir = { ...dir };
+            }, { passive: false });
+        }
+    });
+
+    // 2. Swipe Controls
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    canvas.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    canvas.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+        
+        const dx = touchEndX - touchStartX;
+        const dy = touchEndY - touchStartY;
+        
+        // 確保滑動距離足夠長，避免誤觸
+        if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // 橫向滑動
+                pacman.nextDir = { x: dx > 0 ? 1 : -1, y: 0 };
+            } else {
+                // 縱向滑動
+                pacman.nextDir = { x: 0, y: dy > 0 ? 1 : -1 };
+            }
+        }
+    }, { passive: true });
+
+    // 防止手機版點擊 Canvas 觸發瀏覽器縮放
+    canvas.addEventListener('click', (e) => {
+        if (!gameActive) startBtn.click();
+    });
+}
+
+initMobileControls();
 updateLeaderboardUI();
 initGame();
 gameLoop();

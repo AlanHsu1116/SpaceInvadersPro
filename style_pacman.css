@@ -236,7 +236,72 @@ footer p {
     opacity: 1;
 }
 
+/* 手機版控制按鈕 */
+.mobile-controls {
+    display: none; /* 預設隱藏，僅在小螢幕顯示 */
+    width: 100%;
+    justify-content: center;
+    margin-top: 20px;
+    z-index: 5;
+}
+
+.d-pad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.middle-row {
+    display: flex;
+    gap: 40px;
+}
+
+.pad-btn {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--neon-blue);
+    color: var(--neon-blue);
+    border-radius: 15px;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    transition: all 0.1s;
+    box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+}
+
+.pad-btn:active {
+    background: var(--neon-blue);
+    color: #000;
+    box-shadow: 0 0 20px var(--neon-blue);
+    transform: scale(0.95);
+}
+
 /* 手機版適配 */
+@media (max-width: 768px) {
+    .mobile-controls {
+        display: flex;
+    }
+    
+    .game-container {
+        padding: 10px;
+        justify-content: flex-start;
+    }
+
+    .canvas-wrapper {
+        max-height: 50vh;
+    }
+
+    footer p {
+        display: none; /* 手機版隱藏方向鍵提示 */
+    }
+}
+
 @media (max-height: 600px) {
     .game-container {
         padding: 5px;
