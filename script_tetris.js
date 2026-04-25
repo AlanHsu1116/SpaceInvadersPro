@@ -355,9 +355,10 @@ function gridSweep() {
             rowCount *= 2;
             lines++;
             
-            if (lines % 10 === 0) {
+            if (lines % 20 === 0) {
                 level++;
-                dropInterval = Math.max(100, 1000 - (level - 1) * 100);
+                // Smoother speed curve: reduce by 80ms per level, minimum 150ms
+                dropInterval = Math.max(150, 1000 - (level - 1) * 80);
             }
             playSound('clear');
         }
@@ -416,10 +417,29 @@ function handleKeyPress(e) {
     if (e.code === 'KeyP') togglePause();
     if (paused) return;
 
-    if (e.code === 'ArrowLeft') player.pos.x--, collide(grid, player) && player.pos.x++, playSound('move');
-    if (e.code === 'ArrowRight') player.pos.x++, collide(grid, player) && player.pos.x--, playSound('move');
+    if (e.code === 'ArrowLeft') {
+        player.pos.x--;
+        if (collide(grid, player)) {
+            player.pos.x++;
+        } else {
+            playSound('move');
+            dropCounter = 0; // Reset timer for smoother control
+        }
+    }
+    if (e.code === 'ArrowRight') {
+        player.pos.x++;
+        if (collide(grid, player)) {
+            player.pos.x--;
+        } else {
+            playSound('move');
+            dropCounter = 0; // Reset timer for smoother control
+        }
+    }
     if (e.code === 'ArrowDown') playerDrop();
-    if (e.code === 'ArrowUp') playerRotate();
+    if (e.code === 'ArrowUp') {
+        playerRotate();
+        dropCounter = 0; // Reset timer for smoother control
+    }
     if (e.code === 'Space') playerHardDrop();
 }
 
@@ -601,9 +621,28 @@ function initMobileControls() {
         }, { passive: false });
     };
 
-    bind('moveLeftBtn', () => { player.pos.x--; if(collide(grid, player)) player.pos.x++; playSound('move'); });
-    bind('moveRightBtn', () => { player.pos.x++; if(collide(grid, player)) player.pos.x--; playSound('move'); });
-    bind('rotateBtn', playerRotate);
+    bind('moveLeftBtn', () => { 
+        player.pos.x--; 
+        if(collide(grid, player)) {
+            player.pos.x++; 
+        } else {
+            playSound('move');
+            dropCounter = 0;
+        }
+    });
+    bind('moveRightBtn', () => { 
+        player.pos.x++; 
+        if(collide(grid, player)) {
+            player.pos.x--; 
+        } else {
+            playSound('move');
+            dropCounter = 0;
+        }
+    });
+    bind('rotateBtn', () => {
+        playerRotate();
+        dropCounter = 0;
+    });
     bind('hardDropBtn', playerHardDrop);
 }
 
